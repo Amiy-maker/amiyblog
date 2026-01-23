@@ -193,14 +193,14 @@ function generateSectionBody(
         lines[0].length < 60 &&
         (lines[0].endsWith(":") || lines[0] === lines[0].toUpperCase())
       ) {
-        result += `<h2 class="text-2xl font-bold mt-6 mb-4">${escapeHTML(lines[0])}</h2>\n`;
+        result += `<h2>${escapeHTML(lines[0])}</h2>\n`;
         lines.shift();
       }
 
       // Rest of content
       const bodyText = lines.join("\n").trim();
       if (bodyText) {
-        result += `<p class="text-base leading-relaxed">${escapeHTML(bodyText)}</p>`;
+        result += `<p>${escapeHTML(bodyText)}</p>`;
       }
 
       // Add image if enabled and available
@@ -209,7 +209,7 @@ function generateSectionBody(
         console.log(`Looking for image keyword: "${image.keyword}" in section`);
         const imageUrl = imageUrls[image.keyword] || "/placeholder-section.jpg";
         console.log(`Resolved image URL for section: ${imageUrl}`);
-        result += `\n<img src="${imageUrl}" alt="${image.keyword}" class="rounded-lg my-4" />`;
+        result += `\n<img src="${imageUrl}" alt="${image.keyword}" />`;
         imageIndex++;
       }
 
