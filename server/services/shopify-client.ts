@@ -139,6 +139,8 @@ export class ShopifyClient {
    * Get blog ID from shop
    */
   async getBlogId(): Promise<string> {
+    this.validateCredentials();
+
     const blogIdEnv = process.env.BLOG_ID;
     if (blogIdEnv) {
       return blogIdEnv;
@@ -158,7 +160,7 @@ export class ShopifyClient {
     }
 
     const data = await response.json() as { blogs: Array<{ id: string; title: string }> };
-    
+
     if (data.blogs.length === 0) {
       throw new Error("No blogs found in this Shopify store");
     }
