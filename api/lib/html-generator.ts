@@ -159,10 +159,10 @@ function generateList(
   const tag = listType === "ul" ? "ul" : "ol";
   const items = lines.map((line) => `<li>${escapeHTML(line)}</li>`).join("\n");
 
-  let html = `<${tag} class="space-y-2">\n${items}\n</${tag}>`;
+  let html = `<${tag}>\n${items}\n</${tag}>`;
 
   if (title) {
-    html = `<h2 class="text-2xl font-bold mb-4">${title}</h2>\n${html}`;
+    html = `<h2>${title}</h2>\n${html}`;
   }
 
   return html;
