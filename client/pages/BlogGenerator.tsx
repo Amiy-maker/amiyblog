@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SECTION_RULES, getSectionsByOrder } from "@shared/section-rules";
 import { GenerateHTMLRequest, GenerateHTMLResponse } from "@shared/api";
 import { toast } from "sonner";
-import { Copy, Download, Zap, Upload, Edit2 } from "lucide-react";
+import { Copy, Download, Zap, Upload, Edit2, Trash2 } from "lucide-react";
 import * as mammoth from "mammoth";
 
 export default function BlogGenerator() {
