@@ -31,9 +31,22 @@ export class ShopifyClient {
   }
 
   /**
+   * Validate that Shopify credentials are configured
+   */
+  private validateCredentials(): void {
+    if (!this.shopName || !this.accessToken) {
+      throw new Error(
+        "Shopify credentials not configured. Please set SHOPIFY_SHOP and SHOPIFY_ADMIN_ACCESS_TOKEN environment variables."
+      );
+    }
+  }
+
+  /**
    * Make a GraphQL request to Shopify
    */
   private async graphql(query: string, variables?: Record<string, any>): Promise<ShopifyGraphQLResponse> {
+    this.validateCredentials();
+
     const response = await fetch(`${this.baseUrl}/graphql.json`, {
       method: "POST",
       headers: {
