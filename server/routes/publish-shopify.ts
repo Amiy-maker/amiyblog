@@ -45,8 +45,8 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
       });
     }
 
-    // Generate HTML
-    const bodyHtml = generateHTML(parsed, {
+    // Generate styled HTML (includes CSS for Shopify rendering)
+    const bodyHtml = generateStyledHTML(parsed, {
       includeSchema: true,
       includeImages: true,
       blogTitle: title,
