@@ -588,7 +588,7 @@ export function generateStyledHTML(
   const content = generateHTML(parsed, options);
   const styles = getBlogStyles();
 
-  return `<style>${styles}</style>\n${content}`;
+  return `<style>${styles}</style>\n<div class="blog-content">\n${content}\n</div>`;
 }
 
 /**
