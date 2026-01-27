@@ -1,19 +1,37 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       <div className="border-b border-blue-200 bg-white/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Blog Creator</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-blue-600" />
+              <h1 className="text-2xl font-bold text-gray-900">Blog Creator</h1>
+            </div>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
           </div>
           <p className="text-gray-600">
             Build SEO-optimized blog posts with guided, non-technical workflows
