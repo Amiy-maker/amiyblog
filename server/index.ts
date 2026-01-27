@@ -39,6 +39,9 @@ export function createServer() {
     res.json({ message: ping });
   });
 
+  // Authentication routes
+  app.post("/api/verify-password", handleVerifyPassword);
+
   app.get("/api/demo", handleDemo);
 
   // Blog generator routes
