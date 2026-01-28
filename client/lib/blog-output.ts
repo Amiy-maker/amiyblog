@@ -94,12 +94,12 @@ export function generateBlogHTML(post: BlogPost, featuredImageUrl?: string): str
       }
     });
     parts.push("</ol>");
-    if (post.sections.howItWorks.diagramImage.file) {
-      const imgSrc = URL.createObjectURL(
-        post.sections.howItWorks.diagramImage.file
+    if (post.sections.howItWorks.diagramImage.file || post.sections.howItWorks.diagramImage.url) {
+      const imgSrc = post.sections.howItWorks.diagramImage.url || URL.createObjectURL(
+        post.sections.howItWorks.diagramImage.file!
       );
       parts.push(
-        `<img src="${imgSrc}" alt="${escapeHtml(post.sections.howItWorks.diagramImage.alt)}" />`
+        `<img src="${imgSrc}" alt="${escapeHtml(post.sections.howItWorks.diagramImage.alt)}" style="width: 100%; height: auto; margin: 1.5rem 0; border-radius: 8px;" />`
       );
     }
     parts.push("");
