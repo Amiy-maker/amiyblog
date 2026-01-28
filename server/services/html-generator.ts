@@ -294,8 +294,8 @@ function generateFAQSection(lines: string[]): string {
   for (const faq of faqs) {
     html += `
 <details>
-  <summary>${escapeHTML(faq.question)}</summary>
-  <p>${escapeHTML(faq.answer)}</p>
+  <summary>${textWithLinksToHTML(faq.question)}</summary>
+  <p>${textWithLinksToHTML(faq.answer)}</p>
 </details>
 `;
   }
