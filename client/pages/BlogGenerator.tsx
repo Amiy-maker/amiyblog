@@ -55,10 +55,12 @@ export default function BlogGenerator() {
       let content: string;
 
       if (fileExtension === ".docx") {
-        // Parse DOCX file using mammoth
+        // Parse DOCX file using mammoth, preserving links
         const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        content = result.value;
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+
+        // Convert HTML to text while preserving links in markdown format
+        content = htmlToTextWithLinks(result.value);
 
         if (result.messages.length > 0) {
           console.warn("DOCX parsing warnings:", result.messages);
@@ -81,6 +83,72 @@ export default function BlogGenerator() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  /**
+   * Convert HTML to plain text while preserving links in markdown format
+   */
+  const htmlToTextWithLinks = (html: string): string => {
+    // Create a temporary DOM element to parse HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    let text = "";
+
+    const processNode = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent || "";
+      }
+
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+
+        // Handle links: preserve as [text](url)
+        if (element.tagName.toLowerCase() === "a") {
+          const linkText = Array.from(element.childNodes)
+            .map(n => processNode(n))
+            .join("");
+          const href = element.getAttribute("href") || "";
+          return href ? `[${linkText}](${href})` : linkText;
+        }
+
+        // Handle paragraphs and divs
+        if (["p", "div", "section", "article"].includes(element.tagName.toLowerCase())) {
+          const content = Array.from(element.childNodes)
+            .map(n => processNode(n))
+            .join("");
+          return content + "\n";
+        }
+
+        // Handle lists
+        if (element.tagName.toLowerCase() === "ul" || element.tagName.toLowerCase() === "ol") {
+          const items = Array.from(element.querySelectorAll("li"))
+            .map(li => "- " + Array.from(li.childNodes)
+              .map(n => processNode(n))
+              .join("")
+              .trim()
+            )
+            .join("\n");
+          return items + "\n";
+        }
+
+        // Handle other elements recursively
+        return Array.from(element.childNodes)
+          .map(n => processNode(n))
+          .join("");
+      }
+
+      return "";
+    };
+
+    text = processNode(doc.body);
+
+    // Clean up excessive whitespace
+    return text
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .join("\n");
   };
 
   /**
