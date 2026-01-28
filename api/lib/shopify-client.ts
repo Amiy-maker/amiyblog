@@ -130,7 +130,7 @@ export class ShopifyClient {
   ): Promise<string> {
     this.validateCredentials();
 
-    const restUrl = `${this.baseUrl.replace("/graphql.json", "")}/blogs/${blogId}/articles/${articleId}.json`;
+    const restUrl = `${this.baseUrl}/blogs/${blogId}/articles/${articleId}.json`;
 
     const updateData: any = {};
     if (article.title) updateData.title = article.title;
@@ -168,7 +168,7 @@ export class ShopifyClient {
     }
 
     // Fetch blog ID from Shopify if not in env
-    const restUrl = `${this.baseUrl.replace("/graphql.json", "")}/blogs.json`;
+    const restUrl = `${this.baseUrl}/blogs.json`;
 
     const response = await fetch(restUrl, {
       headers: {
@@ -181,7 +181,7 @@ export class ShopifyClient {
     }
 
     const data = await response.json() as { blogs: Array<{ id: string; title: string }> };
-    
+
     if (data.blogs.length === 0) {
       throw new Error("No blogs found in this Shopify store");
     }
