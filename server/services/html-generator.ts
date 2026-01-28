@@ -654,15 +654,19 @@ function getBlogStyles(): string {
 
 /**
  * Generate HTML with embedded styles (for Shopify/external publishing)
+ * Shopify strips <style> tags, so we use inline styles and rely on browser defaults
  */
 export function generateStyledHTML(
   parsed: ParsedDocument,
   options: HTMLGeneratorOptions = {}
 ): string {
   const content = generateHTML(parsed, options);
-  const styles = getBlogStyles();
 
-  return `<style>${styles}</style>\n<div class="blog-content">\n${content}\n</div>`;
+  // Wrap in style-aware div with inline CSS for critical styling
+  // Note: Shopify strips <style> tags from article body, so we use a wrapper div with limited inline styles
+  const styledWrapper = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; line-height: 1.7; color: #2c3e50; max-width: 720px; margin: 0 auto; padding: 0;">\n${content}\n</div>`;
+
+  return styledWrapper;
 }
 
 /**
