@@ -383,6 +383,7 @@ export default function BlogGenerator() {
           includeSchema: true,
           includeImages: true,
           imageUrls: Object.keys(imageUrls).length > 0 ? imageUrls : undefined,
+          featuredImageUrl: featuredImage?.url,
         },
       };
 
