@@ -502,6 +502,7 @@ export default function BlogGenerator() {
             : undefined,
           publicationDate: publishData.publicationDate,
           imageUrls: Object.keys(imageUrls).length > 0 ? imageUrls : undefined,
+          featuredImageUrl: featuredImage?.url,
         }),
       });
 
