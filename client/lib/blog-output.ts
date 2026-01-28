@@ -116,10 +116,10 @@ export function generateBlogHTML(post: BlogPost, featuredImageUrl?: string): str
         parts.push(`<p>${escapeHtml(useCase.description)}</p>`);
       }
     });
-    if (post.sections.useCases.image.file) {
-      const imgSrc = URL.createObjectURL(post.sections.useCases.image.file);
+    if (post.sections.useCases.image.file || post.sections.useCases.image.url) {
+      const imgSrc = post.sections.useCases.image.url || URL.createObjectURL(post.sections.useCases.image.file!);
       parts.push(
-        `<img src="${imgSrc}" alt="${escapeHtml(post.sections.useCases.image.alt)}" />`
+        `<img src="${imgSrc}" alt="${escapeHtml(post.sections.useCases.image.alt)}" style="width: 100%; height: auto; margin: 1.5rem 0; border-radius: 8px;" />`
       );
     }
     parts.push("");
