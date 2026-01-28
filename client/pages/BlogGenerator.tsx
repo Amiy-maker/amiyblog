@@ -24,8 +24,10 @@ export default function BlogGenerator() {
   const [images, setImages] = useState<Array<{ keyword: string; sectionId: string }>>([]);
   const [uploadingImages, setUploadingImages] = useState<Record<string, boolean>>({});
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [featuredImage, setFeaturedImage] = useState<{ url: string; uploading: boolean } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const featuredImageInputRef = useRef<HTMLInputElement>(null);
   const imageFileInputsRef = useRef<Record<string, HTMLInputElement>>({});
 
   const sections = getSectionsByOrder();
