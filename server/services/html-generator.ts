@@ -365,6 +365,51 @@ function escapeHTML(text: string): string {
 }
 
 /**
+ * Convert text with markdown links to HTML
+ * Handles format: [link text](url)
+ */
+function textWithLinksToHTML(text: string): string {
+  // First, escape HTML special characters except for brackets and parentheses we'll use for links
+  let escaped = text.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  // Then convert markdown links to HTML links: [text](url) -> <a href="url">text</a>
+  escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+    // Validate URL to prevent XSS
+    if (isValidURL(url)) {
+      return `<a href="${escapeHTML(url)}">${linkText}</a>`;
+    }
+    return match; // Return original if URL is invalid
+  });
+
+  return escaped;
+}
+
+/**
+ * Check if a URL is valid and safe
+ */
+function isValidURL(url: string): boolean {
+  try {
+    // Allow http, https, mailto, and relative URLs
+    if (url.startsWith("http://") || url.startsWith("https://") ||
+        url.startsWith("mailto:") || url.startsWith("/")) {
+      new URL(url.startsWith("http") ? url : "https://example.com" + (url.startsWith("/") ? url : "/" + url));
+      return true;
+    }
+    // Allow relative URLs without protocol
+    if (!url.includes("://") && !url.startsWith("javascript:") && !url.startsWith("data:")) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get the CSS styles used for blog posts - scoped to .blog-content wrapper
  */
 function getBlogStyles(): string {
