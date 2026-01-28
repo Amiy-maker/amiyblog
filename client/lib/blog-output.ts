@@ -1,5 +1,439 @@
 import type { BlogPost, FAQItem } from "@/types/blog";
 
+// Comprehensive CSS styles for blog posts
+const BLOG_CSS = `
+<style>
+  /* Reset and Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #222;
+    background-color: #fff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Container */
+  .blog-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  /* Typography - Headings */
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 30px;
+    margin-top: 0;
+    color: #1a1a1a;
+    letter-spacing: -0.5px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 45px;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+    border-bottom: 3px solid #2563eb;
+    padding-bottom: 12px;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #2563eb;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+  }
+
+  h5, h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+  }
+
+  /* Typography - Body */
+  p {
+    margin-bottom: 18px;
+    line-height: 1.8;
+    color: #444;
+  }
+
+  p + p {
+    margin-top: 0;
+  }
+
+  /* Links */
+  a {
+    color: #2563eb;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  a:hover {
+    color: #1d4ed8;
+    border-bottom-color: #2563eb;
+  }
+
+  a:visited {
+    color: #7c3aed;
+  }
+
+  /* Images */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 30px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  img:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Lists */
+  ul, ol {
+    margin-bottom: 24px;
+    margin-left: 30px;
+    padding-left: 0;
+  }
+
+  li {
+    margin-bottom: 12px;
+    line-height: 1.8;
+    color: #444;
+  }
+
+  li + li {
+    margin-top: 8px;
+  }
+
+  /* Nested lists */
+  ul ul, ul ol, ol ul, ol ol {
+    margin-top: 12px;
+    margin-bottom: 0;
+    margin-left: 20px;
+  }
+
+  /* List styling */
+  ul > li {
+    list-style-type: disc;
+  }
+
+  ul ul > li {
+    list-style-type: circle;
+  }
+
+  ul ul ul > li {
+    list-style-type: square;
+  }
+
+  /* Strong emphasis */
+  strong, b {
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  em, i {
+    font-style: italic;
+    color: #555;
+  }
+
+  /* Blockquote */
+  blockquote {
+    border-left: 4px solid #2563eb;
+    padding: 20px 25px;
+    margin: 30px 0;
+    background-color: #f0f9ff;
+    color: #1e40af;
+    font-style: italic;
+    border-radius: 0 8px 8px 0;
+  }
+
+  blockquote p {
+    margin-bottom: 10px;
+    color: #1e40af;
+  }
+
+  blockquote p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 30px 0;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  thead {
+    background-color: #f3f4f6;
+  }
+
+  th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 700;
+    color: #1a1a1a;
+    border-bottom: 2px solid #e5e7eb;
+    font-size: 0.95rem;
+  }
+
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #555;
+  }
+
+  tbody tr:hover {
+    background-color: #f9fafb;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Code */
+  code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    background-color: #f3f4f6;
+    color: #d97706;
+    padding: 2px 6px;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  pre {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 24px 0;
+    line-height: 1.5;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+  }
+
+  pre code {
+    background-color: transparent;
+    color: #e5e7eb;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* Details/Collapse */
+  details {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 20px 0;
+    background-color: #f9fafb;
+    transition: all 0.2s ease;
+  }
+
+  details[open] {
+    background-color: #f3f4f6;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #2563eb;
+    user-select: none;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  summary:hover {
+    background-color: #dbeafe;
+  }
+
+  details p {
+    margin-top: 16px;
+    color: #555;
+  }
+
+  details p:first-of-type {
+    margin-top: 12px;
+  }
+
+  /* Definition List (for FAQs) */
+  dl {
+    margin: 24px 0;
+  }
+
+  dt {
+    font-weight: 700;
+    color: #2563eb;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+  }
+
+  dt:first-child {
+    margin-top: 0;
+  }
+
+  dd {
+    margin-left: 0;
+    margin-bottom: 16px;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  /* Brand Promotion Section */
+  .brand-promotion {
+    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    border: 2px solid #2563eb;
+    border-radius: 12px;
+    padding: 30px;
+    margin: 40px 0;
+    color: #1e3a8a;
+  }
+
+  .brand-promotion h3 {
+    color: #1e3a8a;
+    margin-top: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .brand-promotion ul {
+    margin-left: 20px;
+  }
+
+  .brand-promotion li {
+    color: #1e40af;
+  }
+
+  .brand-promotion strong {
+    color: #1e40af;
+  }
+
+  /* Horizontal Rule */
+  hr {
+    border: none;
+    border-top: 2px solid #e5e7eb;
+    margin: 40px 0;
+  }
+
+  /* FAQ Section Styles */
+  .faq-section {
+    background-color: #f9fafb;
+    border-radius: 12px;
+    padding: 30px;
+    margin: 40px 0;
+  }
+
+  .faq-section h2 {
+    margin-top: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .blog-container {
+      padding: 24px 16px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 30px;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-top: 24px;
+    }
+
+    p {
+      margin-bottom: 16px;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+    }
+
+    blockquote {
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+
+    table {
+      font-size: 0.9rem;
+      margin: 24px 0;
+    }
+
+    th, td {
+      padding: 12px;
+    }
+
+    img {
+      margin: 20px 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+    }
+
+    .brand-promotion {
+      padding: 20px;
+      margin: 24px 0;
+    }
+  }
+</style>
+`;
+
 export function generateBlogHTML(post: BlogPost, featuredImageUrl?: string): string {
   const parts: string[] = [];
 
