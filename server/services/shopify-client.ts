@@ -419,7 +419,7 @@ export class ShopifyClient {
     try {
       this.validateCredentials();
 
-      const restUrl = `${this.baseUrl.replace("/graphql.json", "")}/shop.json`;
+      const restUrl = `${this.baseUrl}/shop.json`;
 
       const response = await fetch(restUrl, {
         headers: {
