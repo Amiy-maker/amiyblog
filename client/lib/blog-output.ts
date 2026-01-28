@@ -583,17 +583,19 @@ export function generateBlogHTML(post: BlogPost, featuredImageUrl?: string): str
 
   // FAQs Section
   if (post.sections.faqs.items.length > 0) {
+    parts.push(`<section class="faq-section">`);
     parts.push(
       `<h2>Frequently Asked Questions About ${post.primaryKeyword}</h2>`
     );
     parts.push("<dl>");
     post.sections.faqs.items.forEach((faq) => {
       if (faq.question && faq.answer) {
-        parts.push(`<dt><strong>${escapeHtml(faq.question)}</strong></dt>`);
+        parts.push(`<dt>${escapeHtml(faq.question)}</dt>`);
         parts.push(`<dd>${escapeHtml(faq.answer)}</dd>`);
       }
     });
     parts.push("</dl>");
+    parts.push("</section>");
     parts.push("");
   }
 
