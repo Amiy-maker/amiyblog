@@ -28,10 +28,10 @@ export function generateBlogHTML(post: BlogPost, featuredImageUrl?: string): str
       `<h2>What Is ${post.primaryKeyword} and Why It Matters Today</h2>`
     );
     parts.push(`<p>${escapeHtml(post.sections.whatIs.content)}</p>`);
-    if (post.sections.whatIs.image.file) {
-      const imgSrc = URL.createObjectURL(post.sections.whatIs.image.file);
+    if (post.sections.whatIs.image.file || post.sections.whatIs.image.url) {
+      const imgSrc = post.sections.whatIs.image.url || URL.createObjectURL(post.sections.whatIs.image.file!);
       parts.push(
-        `<img src="${imgSrc}" alt="${escapeHtml(post.sections.whatIs.image.alt)}" />`
+        `<img src="${imgSrc}" alt="${escapeHtml(post.sections.whatIs.image.alt)}" style="width: 100%; height: auto; margin: 1.5rem 0; border-radius: 8px;" />`
       );
     }
     parts.push("");
