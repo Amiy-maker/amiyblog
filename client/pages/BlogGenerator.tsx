@@ -311,6 +311,61 @@ export default function BlogGenerator() {
   };
 
   /**
+   * Upload featured/hero image to Shopify
+   */
+  const uploadFeaturedImageToShopify = async (file: File) => {
+    setFeaturedImage({ url: "", uploading: true });
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("keyword", "featured-hero");
+
+      const response = await fetch("/api/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(`Failed to upload featured image: ${data.error}`);
+        setFeaturedImage(null);
+        return;
+      }
+
+      setFeaturedImage({ url: data.imageUrl, uploading: false });
+      toast.success("Featured image uploaded to Shopify!");
+    } catch (error) {
+      console.error("Error uploading featured image:", error);
+      toast.error(`Error uploading featured image: ${error instanceof Error ? error.message : String(error)}`);
+      setFeaturedImage(null);
+    }
+  };
+
+  /**
+   * Handle featured image file selection
+   */
+  const handleFeaturedImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    await uploadFeaturedImageToShopify(file);
+
+    // Reset input
+    if (featuredImageInputRef.current) {
+      featuredImageInputRef.current.value = "";
+    }
+  };
+
+  /**
+   * Remove featured image
+   */
+  const removeFeaturedImage = () => {
+    setFeaturedImage(null);
+    toast.success("Featured image removed");
+  };
+
+  /**
    * Generate HTML from document
    */
   const generateBlogHTML = async () => {
