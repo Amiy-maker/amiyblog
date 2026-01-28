@@ -121,15 +121,35 @@ export class ShopifyClient {
       body: JSON.stringify({ article: articleData }),
     });
 
+    const responseData = await response.json() as any;
+
     if (!response.ok) {
-      const error = await response.text();
+      const error = JSON.stringify(responseData, null, 2);
       console.error("Article creation failed:", error);
       throw new Error(`Failed to publish article: ${error}`);
     }
 
-    const data = await response.json() as { article: { id: string; title: string; handle: string } };
-    console.log(`Article created successfully. Article ID: ${data.article.id}`);
-    return data.article.id;
+    if (responseData.errors) {
+      console.error("Shopify API returned errors:", responseData.errors);
+      throw new Error(`Shopify API error: ${JSON.stringify(responseData.errors)}`);
+    }
+
+    const articleId = responseData.article?.id;
+    if (!articleId) {
+      console.error("No article ID in response:", responseData);
+      throw new Error("Failed to get article ID from response");
+    }
+
+    // Log article details including image
+    const publishedArticle = responseData.article;
+    console.log(`Article created successfully. Article ID: ${articleId}`);
+    console.log(`Article image field set: ${!!publishedArticle.image}`);
+    if (publishedArticle.image) {
+      console.log(`  Image src: ${publishedArticle.image.src}`);
+      console.log(`  Image alt: ${publishedArticle.image.alt || 'N/A'}`);
+    }
+
+    return articleId;
   }
 
   /**
