@@ -96,7 +96,7 @@ function generateSectionHTML(
       return generateHero(rawContent, rule, includeImages, section, imageUrls);
 
     case "section2":
-      return `<p style="font-size: 1.05em; line-height: 1.8; margin-bottom: 25px; color: #3a3a3a;">${textWithLinksToHTML(rawContent)}</p>`;
+      return `<p style="font-size: 1.05em; line-height: 1.8; margin-bottom: 15px; margin-top: 0; color: #3a3a3a;">${textWithLinksToHTML(rawContent)}</p>`;
 
     case "section3":
       return generateList(lines, "ul", "Table of Contents");
@@ -108,13 +108,13 @@ function generateSectionHTML(
       return generateSectionBody(rawContent, includeImages, section, imageUrls);
 
     case "section6":
-      return `<blockquote style="border-left: 5px solid #d4a574; padding: 25px 30px; margin: 40px 0; background-color: #fef9f5; font-style: italic; font-size: 1.15em; color: #5a5a5a; line-height: 1.8;">${textWithLinksToHTML(rawContent)}</blockquote>`;
+      return `<blockquote style="border-left: 5px solid #d4a574; padding: 25px 30px; margin: 20px 0; background-color: #fef9f5; font-style: italic; font-size: 1.15em; color: #5a5a5a; line-height: 1.8;">${textWithLinksToHTML(rawContent)}</blockquote>`;
 
     case "section7":
       return generateComparisonTable(lines);
 
     case "section8":
-      return `<blockquote style="border-left: 5px solid #d4a574; padding: 25px 30px; margin: 40px 0; background-color: #fef9f5; font-style: italic; font-size: 1.15em; color: #5a5a5a; line-height: 1.8;">${textWithLinksToHTML(rawContent)}</blockquote>`;
+      return `<blockquote style="border-left: 5px solid #d4a574; padding: 25px 30px; margin: 20px 0; background-color: #fef9f5; font-style: italic; font-size: 1.15em; color: #5a5a5a; line-height: 1.8;">${textWithLinksToHTML(rawContent)}</blockquote>`;
 
     case "section9":
       return generateList(lines, "ol", "Steps");
@@ -126,7 +126,7 @@ function generateSectionHTML(
       return generateFAQSection(lines);
 
     case "section12":
-      return `<p style="font-size: 1.05em; line-height: 1.8; margin-bottom: 25px; color: #3a3a3a;">${textWithLinksToHTML(rawContent)}</p>`;
+      return `<p style="font-size: 1.05em; line-height: 1.8; margin-bottom: 15px; margin-top: 0; color: #3a3a3a;">${textWithLinksToHTML(rawContent)}</p>`;
 
     default:
       console.warn(`Unknown section ID: ${id}. Valid sections are section1-section12.`);
@@ -144,7 +144,7 @@ function generateHero(
   section: ParsedSection,
   imageUrls: Record<string, string>
 ): string {
-  const h1 = `<h1 style="font-size: 2.5em; font-weight: 700; margin-bottom: 30px; margin-top: 0; line-height: 1.2; color: #1a1a1a; letter-spacing: -0.5px;">${textWithLinksToHTML(content)}</h1>`;
+  const h1 = `<h1 style="font-size: 2.5em; font-weight: 700; margin-bottom: 20px; margin-top: 0; line-height: 1.2; color: #1a1a1a; letter-spacing: -0.5px;">${textWithLinksToHTML(content)}</h1>`;
 
   if (includeImages && rule.image?.position === "after" && section.images && section.images.length > 0) {
     const image = section.images[0];
@@ -152,7 +152,7 @@ function generateHero(
     console.log(`Available imageUrls keys: ${Object.keys(imageUrls).join(", ")}`);
     const imageUrl = imageUrls[image.keyword] || "/placeholder-featured.jpg";
     console.log(`Resolved image URL: ${imageUrl}`);
-    const imgTag = `<img src="${imageUrl}" alt="${image.keyword}" style="max-width: 100%; height: auto; display: block; margin: 40px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);" />`;
+    const imgTag = `<img src="${imageUrl}" alt="${image.keyword}" style="max-width: 100%; height: auto; display: block; margin: 25px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);" />`;
     return `${h1}\n${imgTag}`;
   }
 
