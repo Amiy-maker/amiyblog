@@ -638,6 +638,33 @@ export function generateFAQSchema(post: BlogPost): string {
   return `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>`;
 }
 
+/**
+ * Generate complete blog HTML with all styling included
+ * Use this when generating HTML for publishing or downloading
+ */
+export function generateCompleteStyledBlog(post: BlogPost, featuredImageUrl?: string): string {
+  const content = generateBlogHTML(post, featuredImageUrl);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="${escapeHtml(post.metaDescription)}">
+  <meta property="og:title" content="${escapeHtml(post.h1Title)}">
+  <meta property="og:description" content="${escapeHtml(post.metaDescription)}">
+  ${featuredImageUrl ? `<meta property="og:image" content="${escapeHtml(featuredImageUrl)}">` : ''}
+  <title>${escapeHtml(post.h1Title)}</title>
+  ${BLOG_CSS}
+</head>
+<body>
+  <article class="blog-container">
+    ${content}
+  </article>
+</body>
+</html>`;
+}
+
 export function escapeHtml(text: string): string {
   const map: { [key: string]: string } = {
     "&": "&amp;",
