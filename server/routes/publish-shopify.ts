@@ -23,6 +23,22 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
       });
     }
 
+    // Validate featured image URL if provided
+    if (featuredImageUrl) {
+      console.log(`Received featuredImageUrl: ${featuredImageUrl}`);
+
+      // Check if it's a valid URL format
+      if (!featuredImageUrl.startsWith('http://') && !featuredImageUrl.startsWith('https://')) {
+        console.error(`Invalid featured image URL format: ${featuredImageUrl}`);
+        return res.status(400).json({
+          error: "Invalid featured image URL",
+          details: "Featured image URL must be a full HTTP/HTTPS URL",
+        });
+      }
+    } else {
+      console.warn('No featured image URL provided for publication');
+    }
+
     // Parse and validate document
     const parsed = parseDocument(document);
 
