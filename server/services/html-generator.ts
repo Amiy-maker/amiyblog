@@ -489,6 +489,18 @@ function getBlogStyles(): string {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
+    /* Featured image */
+    .blog-content img.featured-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      margin: 0 0 40px 0;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
     /* Lists */
     .blog-content ul,
     .blog-content ol {
