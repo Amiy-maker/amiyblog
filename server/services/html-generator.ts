@@ -50,8 +50,11 @@ export function generateHTML(
 
   // Add featured image if provided
   if (includeImages && featuredImageUrl) {
+    console.log("Adding featured image to HTML:", featuredImageUrl);
     const featuredImageHtml = `<img src="${featuredImageUrl}" alt="Featured" class="featured-image" />`;
     sections.push(featuredImageHtml);
+  } else {
+    console.log("Featured image not included. includeImages:", includeImages, "featuredImageUrl:", featuredImageUrl);
   }
 
   // Generate HTML for each section
