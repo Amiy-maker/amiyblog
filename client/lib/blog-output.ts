@@ -437,8 +437,8 @@ const BLOG_CSS = `
 export function generateBlogHTML(post: BlogPost, featuredImageUrl?: string): string {
   const parts: string[] = [];
 
-  // H1 Title
-  parts.push(`<h1>${escapeHtml(post.h1Title)}</h1>`);
+  // H1 Title with no top margin since it's the first element
+  parts.push(`<h1 style="margin-top: 0;">${escapeHtml(post.h1Title)}</h1>`);
   parts.push("");
 
   // Featured Image
