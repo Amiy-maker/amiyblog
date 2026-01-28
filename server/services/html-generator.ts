@@ -193,14 +193,14 @@ function generateSectionBody(
         lines[0].length < 60 &&
         (lines[0].endsWith(":") || lines[0] === lines[0].toUpperCase())
       ) {
-        result += `<h2>${escapeHTML(lines[0])}</h2>\n`;
+        result += `<h2>${textWithLinksToHTML(lines[0])}</h2>\n`;
         lines.shift();
       }
 
       // Rest of content
       const bodyText = lines.join("\n").trim();
       if (bodyText) {
-        result += `<p>${escapeHTML(bodyText)}</p>`;
+        result += `<p>${textWithLinksToHTML(bodyText)}</p>`;
       }
 
       // Add image if enabled and available
