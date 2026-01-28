@@ -170,7 +170,7 @@ export class ShopifyClient {
     }
 
     // Fetch blog ID from Shopify if not in env
-    const restUrl = `${this.baseUrl.replace("/graphql.json", "")}/blogs.json`;
+    const restUrl = `${this.baseUrl}/blogs.json`;
 
     const response = await fetch(restUrl, {
       headers: {
