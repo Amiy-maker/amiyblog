@@ -36,6 +36,7 @@ export function generateHTML(
     blogDate,
     authorName,
     imageUrls = {},
+    featuredImageUrl,
   } = options;
 
   const sections: string[] = [];
@@ -45,6 +46,12 @@ export function generateHTML(
     const schema = generateArticleSchema(blogTitle, blogDate, authorName);
     console.log("Generated schema markup:", schema.length, "characters");
     sections.push(schema);
+  }
+
+  // Add featured image if provided
+  if (includeImages && featuredImageUrl) {
+    const featuredImageHtml = `<img src="${featuredImageUrl}" alt="Featured" class="featured-image" />`;
+    sections.push(featuredImageHtml);
   }
 
   // Generate HTML for each section
