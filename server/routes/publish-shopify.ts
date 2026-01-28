@@ -47,13 +47,15 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     }
 
     // Generate styled HTML (includes CSS for Shopify rendering)
+    // Don't include featured image in body HTML - it will be set as the article image field
     const bodyHtml = generateStyledHTML(parsed, {
       includeSchema: true,
       includeImages: true,
       blogTitle: title,
       authorName: author,
       imageUrls: imageUrls || {},
-      featuredImageUrl,
+      // Don't pass featuredImageUrl here - we'll set it separately as the article image
+      featuredImageUrl: undefined,
     });
 
     // Publish to Shopify
@@ -70,13 +72,14 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     // Get blog ID
     const blogId = await shopifyClient.getBlogId();
 
-    // Publish article
+    // Publish article with featured image as the article image field (not in body HTML)
     const articleId = await shopifyClient.publishArticle(blogId, {
       title,
       bodyHtml,
       author: author || "Blog Generator",
       publishedAt: publicationDate || new Date().toISOString(),
       tags: tags || [],
+      image: featuredImageUrl ? { src: featuredImageUrl } : undefined,
     });
 
     res.json({
