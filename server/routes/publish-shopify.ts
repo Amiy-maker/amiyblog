@@ -46,17 +46,21 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
       });
     }
 
-    // Generate styled HTML (includes CSS for Shopify rendering)
-    // Don't include featured image in body HTML - it will be set as the article image field
+    // Generate styled HTML for Shopify
+    // Important: DO NOT include featured image in body HTML - it will be set as the article image field
+    // This ensures the featured image appears in Shopify's "Image" field, not in the content
     const bodyHtml = generateStyledHTML(parsed, {
       includeSchema: true,
       includeImages: true,
       blogTitle: title,
       authorName: author,
       imageUrls: imageUrls || {},
-      // Don't pass featuredImageUrl here - we'll set it separately as the article image
+      // CRITICAL: Don't pass featuredImageUrl here - we set it separately as article.image
       featuredImageUrl: undefined,
     });
+
+    console.log("Publishing with featured image URL:", featuredImageUrl);
+    console.log("Body HTML length:", bodyHtml.length);
 
     // Publish to Shopify
     const shopifyClient = getShopifyClient();
