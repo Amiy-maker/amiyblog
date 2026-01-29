@@ -10,6 +10,7 @@ import { handleUploadImage } from "./routes/upload-image.js";
 import { handleVerifyPassword } from "./routes/verify-password.js";
 import { handleGetProducts } from "./routes/get-products.js";
 import { handleValidateShopify } from "./routes/validate-shopify.js";
+import { handleDiagnoseShopify } from "./routes/diagnose-shopify.js";
 
 // Configure multer for file uploads (keep in memory for simplicity)
 const upload = multer({
@@ -52,6 +53,7 @@ export function createServer() {
   app.post("/api/publish-shopify", handlePublishShopify);
   app.get("/api/products", handleGetProducts);
   app.get("/api/validate-shopify", handleValidateShopify);
+  app.get("/api/diagnose-shopify", handleDiagnoseShopify);
 
   // Image upload route
   app.post("/api/upload-image", upload.single("file"), handleUploadImage);

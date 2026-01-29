@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SECTION_RULES, getSectionsByOrder } from "@shared/section-rules";
 import { GenerateHTMLRequest, GenerateHTMLResponse } from "@shared/api";
 import { toast } from "sonner";
-import { Copy, Download, Zap, Upload, Edit2, Trash2 } from "lucide-react";
+import { Copy, Download, Zap, Upload, Edit2, Trash2, Settings } from "lucide-react";
 import * as mammoth from "mammoth";
 import { RelatedProductsField } from "@/components/blog/RelatedProductsField";
 
@@ -52,7 +52,7 @@ export default function BlogGenerator() {
       if (!response.ok || !data.success) {
         const errorMsg = data.error || "Shopify validation failed";
         const suggestion = data.suggestion ? ` ${data.suggestion}` : "";
-        toast.error(`${errorMsg}${suggestion}`);
+        toast.error(`${errorMsg}${suggestion}. Check settings for more details.`);
         return false;
       }
 
@@ -61,6 +61,52 @@ export default function BlogGenerator() {
       console.error("Error validating Shopify:", error);
       toast.error("Unable to validate Shopify connection. Please try again.");
       return false;
+    }
+  };
+
+  /**
+   * Show Shopify diagnostic information
+   */
+  const showDiagnostics = async () => {
+    try {
+      const response = await fetch("/api/diagnose-shopify");
+      const data = await response.json();
+
+      // Open diagnostic info in a new window or show in a modal
+      const diagnosticText = `
+SHOPIFY CONFIGURATION DIAGNOSTIC
+================================
+
+Status: ${data.status}
+
+Environment Variables:
+${Object.entries(data.environment)
+  .map(([key, value]) => `  ${key}: ${value}`)
+  .join("\n")}
+
+Connection Test:
+${data.connection ? `  Status: ${data.connection.status}` : "  Status: Not tested"}
+${data.connection?.shopName ? `  Shop: ${data.connection.shopName}` : ""}
+
+Issues Found:
+${data.issues.length > 0 ? data.issues.map((i: string) => `  • ${i}`).join("\n") : "  ✓ No issues found"}
+
+Timestamp: ${data.timestamp}
+      `;
+
+      // Use browser's alert for simplicity, or copy to clipboard
+      const blob = new Blob([diagnosticText], { type: "text/plain" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "shopify-diagnostics.txt";
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Diagnostic report downloaded. Check your downloads folder.");
+    } catch (error) {
+      console.error("Error fetching diagnostics:", error);
+      toast.error("Failed to get diagnostic information");
     }
   };
 
@@ -698,11 +744,23 @@ export default function BlogGenerator() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Blog Generator</h1>
-          <p className="text-gray-600">
-            Write content using section markers and we'll generate SEO-optimized HTML
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Blog Generator</h1>
+            <p className="text-gray-600">
+              Write content using section markers and we'll generate SEO-optimized HTML
+            </p>
+          </div>
+          <Button
+            onClick={showDiagnostics}
+            variant="outline"
+            size="sm"
+            className="gap-2 text-xs"
+            title="Troubleshoot Shopify connection issues"
+          >
+            <Settings size={16} />
+            Shopify Diagnostics
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
