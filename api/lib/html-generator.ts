@@ -146,7 +146,7 @@ function generateHero(
   section: ParsedSection,
   imageUrls: Record<string, string>
 ): string {
-  const h1 = `<h1>${escapeHTML(content)}</h1>`;
+  const h1 = `<h1 style="font-size: 2.5em; font-weight: 700; margin-bottom: 20px; margin-top: 0; line-height: 1.2; color: #1a1a1a; letter-spacing: -0.5px;">${textWithLinksToHTML(content)}</h1>`;
 
   if (includeImages && rule.image?.position === "after" && section.images && section.images.length > 0) {
     const image = section.images[0];
@@ -157,7 +157,7 @@ function generateHero(
     // Only include image if URL is available (don't use placeholders)
     if (imageUrl) {
       console.log(`Resolved image URL: ${imageUrl}`);
-      const imgTag = `<img src="${imageUrl}" alt="${image.keyword}" style="width: 100%; height: auto; margin: 25px auto 30px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);" />`;
+      const imgTag = `<img src="${imageUrl}" alt="${image.keyword}" style="width: 100%; height: auto; display: block; margin: 25px auto 30px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);" />`;
       return `${h1}\n${imgTag}`;
     } else {
       console.log(`Image URL not available for keyword: ${image.keyword}`);
