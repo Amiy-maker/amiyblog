@@ -441,6 +441,96 @@ export class ShopifyClient {
   }
 
   /**
+   * Fetch products from Shopify
+   */
+  async getProducts(limit: number = 50): Promise<Array<{ id: string; title: string; handle: string; image?: string }>> {
+    this.validateCredentials();
+
+    const restUrl = `${this.baseUrl}/products.json?limit=${limit}&fields=id,title,handle,image`;
+
+    const response = await fetch(restUrl, {
+      headers: {
+        "X-Shopify-Access-Token": this.accessToken,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch products from Shopify");
+    }
+
+    const data = await response.json() as { products: Array<{ id: string; title: string; handle: string; image?: { src: string } }> };
+
+    return data.products.map((product) => ({
+      id: product.id,
+      title: product.title,
+      handle: product.handle,
+      image: product.image?.src,
+    }));
+  }
+
+  /**
+   * Update article metafield
+   */
+  async updateArticleMetafield(
+    blogId: string,
+    articleId: string,
+    namespace: string,
+    key: string,
+    value: string,
+    valueType: "string" | "json" = "json"
+  ): Promise<boolean> {
+    this.validateCredentials();
+
+    const graphqlQuery = `
+      mutation updateMetafield($input: MetafieldsSetInput!) {
+        metafieldsSet(input: $input) {
+          metafields {
+            id
+            namespace
+            key
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const articleGid = `gid://shopify/Article/${articleId.split('/').pop()}`;
+
+    const variables = {
+      input: {
+        ownerId: articleGid,
+        metafields: [
+          {
+            namespace,
+            key,
+            value,
+            type: valueType,
+          },
+        ],
+      },
+    };
+
+    const response = await this.graphql(graphqlQuery, variables);
+
+    if (response.errors) {
+      console.error("Update metafield error:", response.errors);
+      throw new Error(`Failed to update metafield: ${response.errors.map((e: any) => e.message).join('; ')}`);
+    }
+
+    const metafieldData = response.data?.metafieldsSet;
+    if (metafieldData?.userErrors?.length > 0) {
+      console.error("Metafield user errors:", metafieldData.userErrors);
+      throw new Error(`Metafield error: ${metafieldData.userErrors.map((e: any) => e.message).join('; ')}`);
+    }
+
+    return true;
+  }
+
+  /**
    * Validate Shopify connection
    */
   async validateConnection(): Promise<boolean> {
