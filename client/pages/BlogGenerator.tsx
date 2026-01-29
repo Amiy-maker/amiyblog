@@ -42,6 +42,39 @@ export default function BlogGenerator() {
   const sections = getSectionsByOrder();
 
   /**
+   * Validate Shopify connection before opening publish modal
+   */
+  const validateShopifyConnection = async (): Promise<boolean> => {
+    try {
+      const response = await fetch("/api/validate-shopify");
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        const errorMsg = data.error || "Shopify validation failed";
+        const suggestion = data.suggestion ? ` ${data.suggestion}` : "";
+        toast.error(`${errorMsg}${suggestion}`);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error validating Shopify:", error);
+      toast.error("Unable to validate Shopify connection. Please try again.");
+      return false;
+    }
+  };
+
+  /**
+   * Handle opening publish modal
+   */
+  const handleOpenPublishModal = async () => {
+    const isValid = await validateShopifyConnection();
+    if (isValid) {
+      setShowPublishModal(true);
+    }
+  };
+
+  /**
    * Handle document file upload
    */
   const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -905,7 +938,7 @@ export default function BlogGenerator() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setShowPublishModal(true)}
+                          onClick={handleOpenPublishModal}
                           className="gap-2 bg-green-50 hover:bg-green-100 text-green-700"
                         >
                           <Upload size={16} />

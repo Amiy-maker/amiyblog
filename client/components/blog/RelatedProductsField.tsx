@@ -36,9 +36,38 @@ export function RelatedProductsField({
         const response = await fetch("/api/products?limit=250");
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`API error (${response.status}):`, errorText);
-          throw new Error(`Failed to fetch products: ${response.status}`);
+          const contentType = response.headers.get("content-type");
+          let errorData: any = {};
+
+          try {
+            if (contentType?.includes("application/json")) {
+              errorData = await response.json();
+            } else {
+              const errorText = await response.text();
+              console.error(`API error (${response.status}):`, errorText);
+              throw new Error(`Server error: ${response.status}`);
+            }
+          } catch (parseError) {
+            console.error("Failed to parse error response:", parseError);
+            throw new Error(`Server error: ${response.status}`);
+          }
+
+          // Provide specific error messages based on error code
+          let userMessage = "Failed to fetch products";
+          if (errorData.code === "SHOPIFY_CONNECTION_FAILED") {
+            userMessage = "Cannot connect to Shopify. Please ensure Shopify credentials are configured.";
+          } else if (errorData.code === "SHOPIFY_AUTH_ERROR") {
+            userMessage = "Shopify authentication failed. Invalid credentials.";
+          } else if (errorData.code === "SHOPIFY_NOT_CONFIGURED") {
+            userMessage = "Shopify is not configured. Please set up your credentials.";
+          } else if (errorData.code === "SHOPIFY_TIMEOUT") {
+            userMessage = "Shopify is temporarily unavailable. Please try again.";
+          } else if (errorData.error) {
+            userMessage = errorData.error;
+          }
+
+          console.error(`API error (${response.status}):`, errorData);
+          throw new Error(userMessage);
         }
 
         const contentType = response.headers.get("content-type");
@@ -50,16 +79,19 @@ export function RelatedProductsField({
         const data = await response.json();
         if (data.success && Array.isArray(data.products)) {
           setProducts(data.products);
+          if (data.products.length === 0) {
+            toast.info("No products found in your Shopify store");
+          }
         } else if (Array.isArray(data)) {
           setProducts(data);
         } else {
           console.error("Unexpected response format:", data);
-          toast.error("Invalid products data received");
+          throw new Error("Invalid products data received from server");
         }
       } catch (error) {
         console.error("Error fetching products:", error);
         const errorMsg = error instanceof Error ? error.message : "Unknown error";
-        toast.error(`Failed to fetch products: ${errorMsg}`);
+        toast.error(`Products Error: ${errorMsg}`);
       } finally {
         setIsLoading(false);
       }
