@@ -43,6 +43,14 @@ export class ShopifyClient {
         "Shopify credentials not configured. Please set SHOPIFY_SHOP and SHOPIFY_ADMIN_ACCESS_TOKEN environment variables."
       );
     }
+
+    // Validate shop name format
+    if (!this.shopName.includes('.')) {
+      throw new Error(
+        `Invalid SHOPIFY_SHOP format: "${this.shopName}". ` +
+        `Please ensure SHOPIFY_SHOP is in the format "myshop.myshopify.com"`
+      );
+    }
   }
 
   /**
