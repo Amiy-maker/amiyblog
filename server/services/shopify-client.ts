@@ -443,10 +443,10 @@ export class ShopifyClient {
   /**
    * Fetch products from Shopify
    */
-  async getProducts(limit: number = 50): Promise<Array<{ id: string; title: string; handle: string; image?: string }>> {
+  async getProducts(limit: number = 250): Promise<Array<{ id: string; title: string; handle: string; image?: string }>> {
     this.validateCredentials();
 
-    const restUrl = `${this.baseUrl}/products.json?limit=${limit}&fields=id,title,handle,image`;
+    const restUrl = `${this.baseUrl}/products.json?limit=${Math.min(limit, 250)}&fields=id,title,handle,image`;
 
     try {
       const response = await fetch(restUrl, {
