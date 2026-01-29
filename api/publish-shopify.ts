@@ -3,6 +3,13 @@ import { parseDocument } from './lib/document-parser.js';
 import { generateStyledHTML } from './lib/html-generator.js';
 import { getShopifyClient } from './lib/shopify-client.js';
 
+interface RelatedProduct {
+  id: string;
+  title: string;
+  handle: string;
+  image?: string;
+}
+
 export interface PublishShopifyRequest {
   document: string;
   title: string;
@@ -11,6 +18,7 @@ export interface PublishShopifyRequest {
   publicationDate?: string;
   imageUrls?: Record<string, string>; // Maps image keyword to Shopify URL
   featuredImageUrl?: string; // Featured/hero image URL
+  relatedProducts?: RelatedProduct[]; // Related products to save to metafield
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -26,10 +34,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { document, title, author, tags, publicationDate, imageUrls, featuredImageUrl } = req.body as PublishShopifyRequest;
+    const { document, title, author, tags, publicationDate, imageUrls, featuredImageUrl, relatedProducts } = req.body as PublishShopifyRequest;
 
     console.log(`[${new Date().toISOString()}] Publishing article: "${title}"`);
     console.log(`[${new Date().toISOString()}] Document length: ${document?.length || 0}, Author: ${author || 'N/A'}`);
+    console.log(`[${new Date().toISOString()}] Related products: ${relatedProducts?.length || 0}`);
 
     if (!document || !title) {
       console.error('Missing required fields: document or title');
@@ -130,12 +139,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
     console.log(`[${new Date().toISOString()}] Article published successfully. Article ID: ${articleId}`);
 
+    // Save related products to metafield if provided
+    if (relatedProducts && relatedProducts.length > 0) {
+      try {
+        console.log(`[${new Date().toISOString()}] Saving ${relatedProducts.length} related products to metafield`);
+        const relatedProductsValue = JSON.stringify(
+          relatedProducts.map((p) => ({
+            id: p.id,
+            title: p.title,
+            handle: p.handle,
+            image: p.image,
+          }))
+        );
+        await shopifyClient.updateArticleMetafield(
+          blogId,
+          articleId,
+          "custom",
+          "related_products",
+          relatedProductsValue,
+          "json"
+        );
+        console.log(`[${new Date().toISOString()}] ✓ Related products metafield updated successfully`);
+      } catch (error) {
+        const metafieldErrorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`[${new Date().toISOString()}] ✗ Error saving related products to metafield:`, metafieldErrorMsg);
+        console.error(`[${new Date().toISOString()}] Note: Article is already published. Metafield update is optional.`);
+        // Don't fail the entire publish if metafield update fails
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: "Article published to Shopify successfully",
       articleId,
       metadata: parsed.metadata,
       featuredImageIncluded: !!featuredImageUrl,
+      relatedProductsCount: relatedProducts?.length || 0,
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error publishing to Shopify:`, error);
