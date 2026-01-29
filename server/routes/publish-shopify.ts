@@ -233,6 +233,7 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
       console.log("No related products provided - skipping metafield update");
     }
 
+    console.log("=== Publication complete ===");
     res.json({
       success: true,
       message: "Article published to Shopify successfully",
@@ -242,16 +243,18 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
       relatedProductsCount: relatedProducts?.length || 0,
     });
   } catch (error) {
-    console.error("Error publishing to Shopify:", error);
-    console.error("Full error stack:", error instanceof Error ? error.stack : "N/A");
-
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const isFeaturedImageError = errorMessage.includes('image') || errorMessage.includes('Image');
-    const isAuthError = errorMessage.includes('Authentication failed') || errorMessage.includes('401');
-    const isConnectionError = errorMessage.includes('Cannot connect') || errorMessage.includes('Failed to connect');
+    console.error("=== Publication failed ===");
+    console.error("Error message:", errorMessage);
+    console.error("Full error:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "N/A");
+
+    const isFeaturedImageError = errorMessage.toLowerCase().includes('image') || errorMessage.toLowerCase().includes('url');
+    const isAuthError = errorMessage.includes('Authentication failed') || errorMessage.includes('401') || errorMessage.includes('Access token');
+    const isConnectionError = errorMessage.includes('Cannot connect') || errorMessage.includes('Failed to connect') || errorMessage.includes('ENOTFOUND');
 
     if (isAuthError) {
-      console.error("Authentication error detected:", errorMessage);
+      console.error("✗ Authentication error detected");
       return res.status(401).json({
         error: "Shopify authentication failed",
         details: "Your Shopify API access token may be invalid or expired.",
@@ -260,27 +263,27 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     }
 
     if (isConnectionError) {
-      console.error("Connection error detected:", errorMessage);
+      console.error("✗ Connection error detected");
       return res.status(503).json({
-        error: "Unable to validate Shopify connection",
+        error: "Unable to connect to Shopify",
         details: errorMessage,
-        suggestion: "Please verify your Shopify credentials and network connectivity.",
+        suggestion: "Please verify your Shopify shop name is correct and check your network connectivity.",
       });
     }
 
     if (isFeaturedImageError) {
-      console.error("Featured image error detected:", errorMessage);
+      console.error("✗ Featured image error detected");
       return res.status(400).json({
         error: "Failed to set featured image on article",
         details: errorMessage,
-        suggestion: "Ensure the featured image URL is valid and publicly accessible",
+        suggestion: "Ensure the featured image URL is valid, publicly accessible, and properly formatted",
       });
     }
 
     res.status(500).json({
       error: "Failed to publish to Shopify",
       details: errorMessage,
-      suggestion: "Please check the server logs for more details and verify your Shopify configuration.",
+      suggestion: "Please check the server logs for more details. This could be a Shopify API issue, authentication issue, or document content issue.",
     });
   }
 };
