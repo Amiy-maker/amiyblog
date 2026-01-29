@@ -1075,7 +1075,16 @@ export default function BlogGenerator() {
                 Configure and publish your blog post to Shopify
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent
+              className="space-y-4"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "auto",
+                flexGrow: 0,
+                minHeight: "200px",
+              }}
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Blog Title *
