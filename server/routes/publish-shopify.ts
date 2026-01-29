@@ -139,15 +139,27 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     }
 
     // Publish article with featured image as the article image field (not in body HTML)
+    console.log("Publishing article to Shopify...");
     console.log("Featured image URL for publication:", featuredImageUrl ? 'present' : 'missing');
-    const articleId = await shopifyClient.publishArticle(blogId, {
-      title,
-      bodyHtml,
-      author: author || "Blog Generator",
-      publishedAt: publicationDate || new Date().toISOString(),
-      tags: tags || [],
-      image: featuredImageUrl ? { src: featuredImageUrl } : undefined,
-    });
+    console.log("Blog ID:", blogId);
+    console.log("Article title:", title);
+
+    let articleId: string;
+    try {
+      articleId = await shopifyClient.publishArticle(blogId, {
+        title,
+        bodyHtml,
+        author: author || "Blog Generator",
+        publishedAt: publicationDate || new Date().toISOString(),
+        tags: tags || [],
+        image: featuredImageUrl ? { src: featuredImageUrl } : undefined,
+      });
+      console.log("Article published successfully. Article ID:", articleId);
+    } catch (publishError) {
+      const publishErrorMsg = publishError instanceof Error ? publishError.message : String(publishError);
+      console.error("Article publication failed:", publishErrorMsg);
+      throw publishError;
+    }
 
     // Save related products to metafield if provided
     if (relatedProducts && relatedProducts.length > 0) {
