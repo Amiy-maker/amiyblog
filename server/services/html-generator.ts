@@ -431,6 +431,7 @@ function escapeHTML(text: string): string {
 /**
  * Convert text with markdown links to HTML
  * Handles format: [link text](url)
+ * Includes inline styles for maximum compatibility with Shopify and other platforms
  */
 function textWithLinksToHTML(text: string): string {
   // First, escape HTML special characters except for brackets and parentheses we'll use for links
@@ -440,11 +441,12 @@ function textWithLinksToHTML(text: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-  // Then convert markdown links to HTML links: [text](url) -> <a href="url">text</a>
+  // Then convert markdown links to HTML links: [text](url) -> <a href="url" style="...">text</a>
+  // Include inline styles to ensure underlines display properly on all platforms
   escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
     // Validate URL to prevent XSS
     if (isValidURL(url)) {
-      return `<a href="${escapeHTML(url)}">${linkText}</a>`;
+      return `<a href="${escapeHTML(url)}" style="color: #2563eb; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px;">${linkText}</a>`;
     }
     return match; // Return original if URL is invalid
   });
