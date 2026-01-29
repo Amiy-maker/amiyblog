@@ -31,25 +31,36 @@ function expressPlugin(): Plugin {
     name: "express",
     apply: "serve",
     configureServer(server) {
-      return () => {
-        server.middlewares.use(async (req, res, next) => {
-          // Lazy-load the server on first request
-          if (!expressApp) {
-            try {
-              const { createServer } = await import("./server/index.js");
-              expressApp = createServer();
-            } catch (error) {
-              console.error("Failed to load Express server:", error);
-              return res.status(500).json({
-                error: "Server initialization failed",
-                details: error instanceof Error ? error.message : String(error),
-              });
-            }
-          }
+      // Register as PRE middleware so it runs before Vite's default middleware
+      return {
+        pre: [
+          {
+            handler: async (req, res, next) => {
+              // Only handle API routes with Express
+              if (req.url?.startsWith("/api/")) {
+                // Lazy-load the server on first request
+                if (!expressApp) {
+                  try {
+                    const { createServer } = await import("./server/index.js");
+                    expressApp = createServer();
+                  } catch (error) {
+                    console.error("Failed to load Express server:", error);
+                    return res.status(500).json({
+                      error: "Server initialization failed",
+                      details: error instanceof Error ? error.message : String(error),
+                    });
+                  }
+                }
 
-          // Delegate to Express server
-          expressApp(req, res, next);
-        });
+                // Delegate to Express server
+                return expressApp(req, res, next);
+              }
+              // Let other requests pass through
+              next();
+            },
+            order: "pre" as const,
+          },
+        ],
       };
     },
   };
