@@ -34,7 +34,7 @@ const BLOG_CSS = `
     line-height: 1.2;
     margin-bottom: 30px;
     margin-top: 0;
-    color: #1a1a1a;
+    color: #424423;
     letter-spacing: -0.5px;
   }
 
@@ -43,8 +43,8 @@ const BLOG_CSS = `
     font-weight: 700;
     line-height: 1.3;
     margin-top: 50px;
-    margin-bottom: 24px;
-    color: #1a1a1a;
+    margin-bottom: 28px;
+    color: #424423;
     border-bottom: 3px solid #2563eb;
     padding-bottom: 12px;
   }
@@ -53,30 +53,30 @@ const BLOG_CSS = `
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.4;
-    margin-top: 35px;
-    margin-bottom: 18px;
-    color: #2563eb;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    color: #424423;
   }
 
   h4 {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-top: 24px;
-    margin-bottom: 12px;
-    color: #1a1a1a;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #424423;
   }
 
   h5, h6 {
     font-size: 1.1rem;
     font-weight: 600;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #1a1a1a;
+    margin-top: 25px;
+    margin-bottom: 12px;
+    color: #424423;
   }
 
   /* Typography - Body */
   p {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     line-height: 1.8;
     color: #444;
   }
@@ -204,16 +204,16 @@ const BLOG_CSS = `
   }
 
   th {
-    padding: 16px;
+    padding: 15px 18px;
     text-align: left;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #424423;
     border-bottom: 2px solid #e5e7eb;
     font-size: 0.95rem;
   }
 
   td {
-    padding: 14px 16px;
+    padding: 15px 18px;
     border-bottom: 1px solid #e5e7eb;
     color: #555;
   }
@@ -258,40 +258,49 @@ const BLOG_CSS = `
 
   /* Details/Collapse */
   details {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
-    margin: 20px 0;
-    background-color: #f9fafb;
-    transition: all 0.2s ease;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 0;
+    margin: 18px 0;
+    background-color: transparent;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  details:hover {
+    background-color: #f5f5f5;
+    border-color: #d0d0d0;
   }
 
   details[open] {
-    background-color: #f3f4f6;
+    background-color: #f5f5f5;
   }
 
   summary {
     cursor: pointer;
     font-weight: 600;
-    color: #2563eb;
+    color: #424423;
     user-select: none;
-    padding: 4px 8px;
-    margin: -4px -8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    padding: 20px 22px;
+    background-color: #f9f9f9;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+    border: none;
+    outline: none;
   }
 
   summary:hover {
-    background-color: #dbeafe;
+    background-color: #f0f0f0;
   }
 
-  details p {
-    margin-top: 16px;
-    color: #555;
-  }
-
-  details p:first-of-type {
-    margin-top: 12px;
+  details > div {
+    padding: 20px 22px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    color: #3a3a3a;
+    font-size: 1em;
+    line-height: 1.8;
   }
 
   /* Definition List (for FAQs) */
@@ -356,14 +365,15 @@ const BLOG_CSS = `
 
   /* FAQ Section Styles */
   .faq-section {
-    background-color: #f9fafb;
-    border-radius: 12px;
-    padding: 30px;
-    margin: 40px 0;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin: 50px 0;
   }
 
   .faq-section h2 {
     margin-top: 0;
+    color: #424423;
   }
 
   /* Responsive Design */
