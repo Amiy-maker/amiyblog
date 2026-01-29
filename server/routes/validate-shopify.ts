@@ -51,12 +51,24 @@ export const handleValidateShopify: RequestHandler = async (req, res) => {
       const blogErrorMessage = blogError instanceof Error ? blogError.message : "Cannot retrieve blog information";
       console.error("Error getting blog ID:", blogErrorMessage);
 
+      // Check if BLOG_ID is set in env - if so, don't fail completely
+      const blogIdFromEnv = process.env.BLOG_ID;
+      if (blogIdFromEnv) {
+        console.log("Using BLOG_ID from environment:", blogIdFromEnv);
+        return res.json({
+          success: true,
+          isConnected: true,
+          message: "Shopify is properly configured (using BLOG_ID from environment)",
+          blogId: blogIdFromEnv,
+        });
+      }
+
       return res.status(400).json({
         success: false,
         isConnected: true,
         error: "Shopify is connected but no blog found",
         details: blogErrorMessage,
-        suggestion: "Please ensure your Shopify store has at least one blog and that your access token has blog permissions.",
+        suggestion: "Please ensure your Shopify store has at least one blog and that your access token has blog permissions. Alternatively, you can set the BLOG_ID environment variable directly.",
       });
     }
   } catch (error) {
