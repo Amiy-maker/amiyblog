@@ -521,7 +521,7 @@ export class ShopifyClient {
   }
 
   /**
-   * Update a metafield on an article
+   * Update article metafield
    */
   async updateArticleMetafield(
     blogId: string,
@@ -529,34 +529,57 @@ export class ShopifyClient {
     namespace: string,
     key: string,
     value: string,
-    type: string = "string"
-  ): Promise<void> {
+    valueType: "string" | "json" = "json"
+  ): Promise<boolean> {
     this.validateCredentials();
 
-    const restUrl = `${this.baseUrl}/blogs/${blogId}/articles/${articleId}/metafields.json`;
+    const graphqlQuery = `
+      mutation updateMetafield($input: MetafieldsSetInput!) {
+        metafieldsSet(input: $input) {
+          metafields {
+            id
+            namespace
+            key
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
 
-    const metafieldData = {
-      metafield: {
-        namespace,
-        key,
-        value,
-        type,
+    const articleGid = `gid://shopify/Article/${articleId.split('/').pop()}`;
+
+    const variables = {
+      input: {
+        ownerId: articleGid,
+        metafields: [
+          {
+            namespace,
+            key,
+            value,
+            type: valueType,
+          },
+        ],
       },
     };
 
-    const response = await fetch(restUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": this.accessToken,
-      },
-      body: JSON.stringify(metafieldData),
-    });
+    const response = await this.graphql(graphqlQuery, variables);
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to update article metafield: ${error}`);
+    if (response.errors) {
+      console.error("Update metafield error:", response.errors);
+      throw new Error(`Failed to update metafield: ${response.errors.map((e: any) => e.message).join('; ')}`);
     }
+
+    const metafieldData = response.data?.metafieldsSet;
+    if (metafieldData?.userErrors?.length > 0) {
+      console.error("Metafield user errors:", metafieldData.userErrors);
+      throw new Error(`Metafield error: ${metafieldData.userErrors.map((e: any) => e.message).join('; ')}`);
+    }
+
+    return true;
   }
 
   /**
