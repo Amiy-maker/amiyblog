@@ -88,14 +88,15 @@ const BLOG_CSS = `
   /* Links */
   a {
     color: #2563eb;
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
     transition: all 0.2s ease;
   }
 
   a:hover {
     color: #1d4ed8;
-    border-bottom-color: #2563eb;
+    text-decoration-thickness: 2px;
   }
 
   a:visited {
