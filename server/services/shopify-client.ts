@@ -494,14 +494,27 @@ export class ShopifyClient {
         }
 
         const contentType = response.headers.get("content-type");
-        if (!contentType?.includes("application/json")) {
-          const errorText = await response.text();
-          console.error("Invalid content type. Expected JSON but got:", contentType);
-          console.error("Response body (first 500 chars):", errorText.substring(0, 500));
-          throw new Error(`Invalid response format from Shopify. Expected JSON but got ${contentType}`);
-        }
+        let data;
 
-        const data = await response.json() as { products: Array<{ id: string; title: string; handle: string; image?: { src: string } }> };
+        try {
+          if (!contentType?.includes("application/json")) {
+            const errorText = await response.text();
+            console.error("Invalid content type. Expected JSON but got:", contentType);
+            console.error("Response body (first 500 chars):", errorText.substring(0, 500));
+
+            // Try to parse as JSON anyway in case content-type header is wrong
+            try {
+              data = JSON.parse(errorText);
+            } catch {
+              throw new Error(`Invalid response format from Shopify. Expected JSON but got ${contentType}`);
+            }
+          } else {
+            data = await response.json();
+          }
+        } catch (parseError) {
+          console.error("Failed to parse Shopify response:", parseError);
+          throw new Error(`Failed to parse Shopify response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+        }
 
         if (!data.products || !Array.isArray(data.products)) {
           console.warn("No products array in Shopify response");
