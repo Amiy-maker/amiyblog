@@ -212,6 +212,7 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
             image: p.image,
           }))
         );
+        console.log("Metafield value size:", relatedProductsValue.length, "bytes");
         await shopifyClient.updateArticleMetafield(
           blogId,
           articleId,
@@ -220,12 +221,16 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
           relatedProductsValue,
           "json"
         );
-        console.log("Related products metafield updated successfully");
+        console.log("✓ Related products metafield updated successfully");
       } catch (error) {
-        console.error("Error saving related products to metafield:", error);
+        const metafieldErrorMsg = error instanceof Error ? error.message : String(error);
+        console.error("✗ Error saving related products to metafield:", metafieldErrorMsg);
+        console.error("Note: Article is already published. Metafield update is optional.");
         // Don't fail the entire publish if metafield update fails
         // The article is already published
       }
+    } else {
+      console.log("No related products provided - skipping metafield update");
     }
 
     res.json({
