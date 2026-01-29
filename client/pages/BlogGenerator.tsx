@@ -88,6 +88,70 @@ export default function BlogGenerator() {
   };
 
   /**
+   * Handle paste events to detect and convert pasted HTML content
+   */
+  const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const clipboardData = event.clipboardData;
+
+    // Check if HTML data is available in the clipboard
+    if (clipboardData && clipboardData.types.includes("text/html")) {
+      event.preventDefault();
+
+      const htmlContent = clipboardData.getData("text/html");
+      const plainText = clipboardData.getData("text/plain");
+
+      // If HTML content is available, process it with htmlToTextWithLinks
+      if (htmlContent && htmlContent.length > plainText.length) {
+        try {
+          const convertedContent = htmlToTextWithLinks(htmlContent);
+
+          // Get cursor position
+          const textarea = textareaRef.current;
+          if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const before = documentContent.substring(0, start);
+            const after = documentContent.substring(end);
+
+            const newContent = before + convertedContent + after;
+            setDocumentContent(newContent);
+
+            // Move cursor after pasted content
+            setTimeout(() => {
+              textarea.focus();
+              textarea.selectionStart = start + convertedContent.length;
+              textarea.selectionEnd = start + convertedContent.length;
+            }, 0);
+          }
+
+          toast.success("Pasted content converted with links preserved!");
+        } catch (error) {
+          console.error("Error processing pasted HTML:", error);
+          // Fall back to plain text paste
+          const textarea = textareaRef.current;
+          if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const before = documentContent.substring(0, start);
+            const after = documentContent.substring(end);
+            setDocumentContent(before + plainText + after);
+          }
+        }
+      } else {
+        // No HTML available, use plain text
+        const textarea = textareaRef.current;
+        if (textarea) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const before = documentContent.substring(0, start);
+          const after = documentContent.substring(end);
+          setDocumentContent(before + plainText + after);
+        }
+      }
+    }
+  };
+
+  /**
    * Convert HTML to plain text while preserving links in markdown format and proper spacing
    */
   const htmlToTextWithLinks = (html: string): string => {
