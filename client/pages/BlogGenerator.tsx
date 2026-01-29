@@ -1083,6 +1083,8 @@ export default function BlogGenerator() {
                 height: "auto",
                 flexGrow: 0,
                 minHeight: "200px",
+                maxHeight: "70vh",
+                overflowY: "auto",
               }}
             >
               <div>
