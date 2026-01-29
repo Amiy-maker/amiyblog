@@ -283,24 +283,38 @@ function generateComparisonTable(lines: string[]): string {
 
 /**
  * Generate FAQ section with schema markup
+ * Handles flexible formatting with various spacing patterns
  */
 function generateFAQSection(lines: string[]): string {
   const faqs: Array<{ question: string; answer: string }> = [];
 
+  // First, try the standard format with Q: and A: prefixes
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line.startsWith("Q:") || line.startsWith("Q ")) {
-      const question = line.replace(/^Q:?\s*/, "").trim();
-      let answer = "";
+    // Match Q: or Q followed by question text (handles Q1:, Q 1:, Q:, etc.)
+    if (line.match(/^Q\d*:?\s+/i)) {
+      const question = line.replace(/^Q\d*:?\s+/i, "").trim();
+      if (!question) continue;
 
-      // Collect answer lines
+      let answer = "";
       let j = i + 1;
-      while (j < lines.length && !lines[j].startsWith("Q:") && !lines[j].startsWith("Q ")) {
-        if (lines[j].startsWith("A:") || lines[j].startsWith("A ")) {
-          answer = lines[j].replace(/^A:?\s*/, "").trim();
-        } else if (answer) {
-          answer += " " + lines[j];
+
+      // Look for the answer - could be on next line, or skip some lines
+      while (j < lines.length) {
+        const nextLine = lines[j];
+
+        // Stop if we hit the next question
+        if (nextLine.match(/^Q\d*:?\s+/i)) {
+          break;
         }
+
+        // Found answer line
+        if (nextLine.match(/^A\d*:?\s+/i)) {
+          answer = nextLine.replace(/^A\d*:?\s+/i, "").trim();
+          break;
+        }
+
+        // Keep looking if it's just a non-Q/A line
         j++;
       }
 
@@ -310,19 +324,43 @@ function generateFAQSection(lines: string[]): string {
     }
   }
 
+  // If standard format didn't work, try pattern matching on the raw content
+  // by joining lines and looking for Q/A patterns
+  if (faqs.length === 0) {
+    const fullText = lines.join(" ");
+
+    // Match pattern: Q...?: ...text... A...?: ...text... (multiple times)
+    const qPattern = /Q\d*:?\s*([^QA]+?)(?=A\d*:?\s*)/gi;
+    const aPattern = /A\d*:?\s*([^QA]+?)(?=Q\d*:?\s*|$)/gi;
+
+    let qMatch;
+    let aMatches = [...fullText.matchAll(aPattern)];
+    let qIndex = 0;
+
+    while ((qMatch = qPattern.exec(fullText)) !== null) {
+      const question = qMatch[1].trim();
+      const answer = aMatches[qIndex] ? aMatches[qIndex][1].trim() : "";
+
+      if (question && answer) {
+        faqs.push({ question, answer });
+      }
+      qIndex++;
+    }
+  }
+
   if (faqs.length === 0) {
     return "<p style=\"font-size: 1.05em; line-height: 1.8; margin-bottom: 15px; margin-top: 0; color: #3a3a3a;\">No FAQs provided</p>";
   }
 
-  let html = '<h2 style="font-size: 1.8em; font-weight: 600; margin-top: 25px; margin-bottom: 15px; line-height: 1.3; color: #1a1a1a; border-bottom: 3px solid #e8e8e8; padding-bottom: 12px;">Frequently Asked Questions</h2>\n';
-  html += '<div>\n';
+  let html = '<h2 style="font-size: 1.8em; font-weight: 600; margin-top: 45px; margin-bottom: 25px; line-height: 1.3; color: #1a1a1a; border-bottom: 3px solid #e8e8e8; padding-bottom: 12px;">Frequently Asked Questions</h2>\n';
+  html += '<div style="margin: 20px 0;">\n';
 
   for (const faq of faqs) {
     html += `
-<details style="margin: 15px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 6px; background-color: #fafafa; cursor: pointer; transition: all 0.3s ease;">
-  <summary style="font-weight: 600; font-size: 1.1em; color: #1a1a1a; cursor: pointer; outline: none; user-select: none; padding: 5px 0;">${textWithLinksToHTML(faq.question)}</summary>
-  <p style="margin-top: 12px; margin-bottom: 0; font-size: 1em; color: #3a3a3a;">${textWithLinksToHTML(faq.answer)}</p>
-</details>
+<div style="margin-bottom: 25px; padding: 20px; border: 1px solid #d0d0d0; border-radius: 6px; background-color: #f9f9f9;">
+  <p style="margin: 0 0 12px 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a; line-height: 1.6;"><strong>Q: ${textWithLinksToHTML(faq.question)}</strong></p>
+  <p style="margin: 0; font-size: 1em; color: #3a3a3a; line-height: 1.8;">A: ${textWithLinksToHTML(faq.answer)}</p>
+</div>
 `;
   }
 
@@ -393,6 +431,7 @@ function escapeHTML(text: string): string {
 /**
  * Convert text with markdown links to HTML
  * Handles format: [link text](url)
+ * Includes inline styles for maximum compatibility with Shopify and other platforms
  */
 function textWithLinksToHTML(text: string): string {
   // First, escape HTML special characters except for brackets and parentheses we'll use for links
@@ -402,11 +441,12 @@ function textWithLinksToHTML(text: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-  // Then convert markdown links to HTML links: [text](url) -> <a href="url">text</a>
+  // Then convert markdown links to HTML links: [text](url) -> <a href="url" style="...">text</a>
+  // Include inline styles to ensure underlines display properly on all platforms
   escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
     // Validate URL to prevent XSS
     if (isValidURL(url)) {
-      return `<a href="${escapeHTML(url)}">${linkText}</a>`;
+      return `<a href="${escapeHTML(url)}" style="color: #2563eb; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px;">${linkText}</a>`;
     }
     return match; // Return original if URL is invalid
   });
@@ -472,8 +512,8 @@ function getBlogStyles(): string {
     .blog-content h2 {
       font-size: 1.8em;
       font-weight: 600;
-      margin-top: 50px;
-      margin-bottom: 25px;
+      margin-top: 55px;
+      margin-bottom: 28px;
       line-height: 1.3;
       color: #1a1a1a;
       border-bottom: 3px solid #e8e8e8;
@@ -483,7 +523,7 @@ function getBlogStyles(): string {
     .blog-content h3 {
       font-size: 1.4em;
       font-weight: 600;
-      margin-top: 35px;
+      margin-top: 40px;
       margin-bottom: 20px;
       line-height: 1.3;
       color: #1a1a1a;
@@ -495,6 +535,24 @@ function getBlogStyles(): string {
       margin-bottom: 25px;
       color: #3a3a3a;
       text-align: justify;
+    }
+
+    /* Links */
+    .blog-content a {
+      color: #2563eb;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .blog-content a:hover {
+      color: #1d4ed8;
+      text-decoration-thickness: 2px;
+    }
+
+    .blog-content a:visited {
+      color: #7c3aed;
     }
 
     /* Images */
@@ -522,12 +580,12 @@ function getBlogStyles(): string {
     /* Lists */
     .blog-content ul,
     .blog-content ol {
-      margin: 30px 0 30px 35px;
+      margin: 16px 0 28px 35px;
       line-height: 1.9;
     }
 
     .blog-content li {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
       font-size: 1.05em;
       color: #3a3a3a;
     }
