@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import BlogEditor from "./pages/BlogEditor";
 import BlogGenerator from "./pages/BlogGenerator";
 import Login from "./pages/Login";
+import ShopifyDiagnostics from "./pages/ShopifyDiagnostics";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -25,6 +26,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/diagnostics/shopify" element={<ShopifyDiagnostics />} />
       {isAuthenticated && (
         <>
           <Route path="/" element={<Index />} />
