@@ -1113,6 +1113,58 @@ export default function BlogGenerator() {
                 />
               </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Related Products
+                  </label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={loadProducts}
+                    disabled={loadingProducts}
+                    className="h-7 text-xs"
+                  >
+                    {loadingProducts ? "Loading..." : "Load Products"}
+                  </Button>
+                </div>
+                {products.length > 0 ? (
+                  <div className="border border-gray-300 rounded-md p-3 max-h-[200px] overflow-y-auto space-y-2">
+                    {products.map((product) => (
+                      <label key={product.id} className="flex items-start gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product.handle)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedProducts([...selectedProducts, product.handle]);
+                            } else {
+                              setSelectedProducts(selectedProducts.filter((h) => h !== product.handle));
+                            }
+                          }}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{product.title}</p>
+                          <p className="text-xs text-gray-500 truncate">{product.handle}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border border-gray-300 rounded-md p-3 text-center">
+                    <p className="text-sm text-gray-500">
+                      {loadingProducts ? "Loading products..." : "Click 'Load Products' to select related products"}
+                    </p>
+                  </div>
+                )}
+                {selectedProducts.length > 0 && (
+                  <p className="text-xs text-green-600 mt-2">
+                    {selectedProducts.length} product(s) selected
+                  </p>
+                )}
+              </div>
+
               <div className="flex gap-2 pt-4">
                 <Button
                   variant="outline"
