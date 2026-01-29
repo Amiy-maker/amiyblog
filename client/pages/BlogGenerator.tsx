@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SECTION_RULES, getSectionsByOrder } from "@shared/section-rules";
 import { GenerateHTMLRequest, GenerateHTMLResponse } from "@shared/api";
 import { toast } from "sonner";
-import { Copy, Download, Zap, Upload, Edit2, Trash2 } from "lucide-react";
+import { Copy, Download, Zap, Upload, Edit2, Trash2, Settings } from "lucide-react";
 import * as mammoth from "mammoth";
 import { RelatedProductsField } from "@/components/blog/RelatedProductsField";
 
@@ -744,11 +744,23 @@ Timestamp: ${data.timestamp}
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Blog Generator</h1>
-          <p className="text-gray-600">
-            Write content using section markers and we'll generate SEO-optimized HTML
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Blog Generator</h1>
+            <p className="text-gray-600">
+              Write content using section markers and we'll generate SEO-optimized HTML
+            </p>
+          </div>
+          <Button
+            onClick={showDiagnostics}
+            variant="outline"
+            size="sm"
+            className="gap-2 text-xs"
+            title="Troubleshoot Shopify connection issues"
+          >
+            <Settings size={16} />
+            Shopify Diagnostics
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
