@@ -101,27 +101,65 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     // Publish to Shopify
     const shopifyClient = getShopifyClient();
 
-    // Validate connection first
-    const isConnected = await shopifyClient.validateConnection();
+    // Validate connection first with detailed error handling
+    console.log("Validating Shopify connection before publishing...");
+    let isConnected = false;
+    let connectionError: Error | null = null;
+
+    try {
+      isConnected = await shopifyClient.validateConnection();
+    } catch (err) {
+      connectionError = err instanceof Error ? err : new Error(String(err));
+      console.error("Connection validation error:", connectionError.message);
+    }
+
     if (!isConnected) {
+      const errorMessage = connectionError?.message || "Unable to connect to Shopify. Please check your credentials.";
+      console.error("Publishing failed due to connection error:", errorMessage);
       return res.status(503).json({
-        error: "Unable to connect to Shopify. Please check your credentials.",
+        error: errorMessage,
+        suggestion: "Please verify your Shopify credentials and try again.",
       });
     }
 
     // Get blog ID
-    const blogId = await shopifyClient.getBlogId();
+    console.log("Retrieving blog ID...");
+    let blogId: string;
+    try {
+      blogId = await shopifyClient.getBlogId();
+      console.log(`Retrieved blog ID: ${blogId}`);
+    } catch (err) {
+      const blogError = err instanceof Error ? err.message : String(err);
+      console.error("Failed to get blog ID:", blogError);
+      return res.status(400).json({
+        error: "Failed to retrieve blog information from Shopify",
+        details: blogError,
+        suggestion: "Please ensure your Shopify store has at least one blog and your access token has the necessary permissions.",
+      });
+    }
 
     // Publish article with featured image as the article image field (not in body HTML)
+    console.log("Publishing article to Shopify...");
     console.log("Featured image URL for publication:", featuredImageUrl ? 'present' : 'missing');
-    const articleId = await shopifyClient.publishArticle(blogId, {
-      title,
-      bodyHtml,
-      author: author || "Blog Generator",
-      publishedAt: publicationDate || new Date().toISOString(),
-      tags: tags || [],
-      image: featuredImageUrl ? { src: featuredImageUrl } : undefined,
-    });
+    console.log("Blog ID:", blogId);
+    console.log("Article title:", title);
+
+    let articleId: string;
+    try {
+      articleId = await shopifyClient.publishArticle(blogId, {
+        title,
+        bodyHtml,
+        author: author || "Blog Generator",
+        publishedAt: publicationDate || new Date().toISOString(),
+        tags: tags || [],
+        image: featuredImageUrl ? { src: featuredImageUrl } : undefined,
+      });
+      console.log("Article published successfully. Article ID:", articleId);
+    } catch (publishError) {
+      const publishErrorMsg = publishError instanceof Error ? publishError.message : String(publishError);
+      console.error("Article publication failed:", publishErrorMsg);
+      throw publishError;
+    }
 
     // Save related products to metafield if provided
     if (relatedProducts && relatedProducts.length > 0) {
@@ -161,9 +199,30 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error publishing to Shopify:", error);
+    console.error("Full error stack:", error instanceof Error ? error.stack : "N/A");
 
     const errorMessage = error instanceof Error ? error.message : String(error);
     const isFeaturedImageError = errorMessage.includes('image') || errorMessage.includes('Image');
+    const isAuthError = errorMessage.includes('Authentication failed') || errorMessage.includes('401');
+    const isConnectionError = errorMessage.includes('Cannot connect') || errorMessage.includes('Failed to connect');
+
+    if (isAuthError) {
+      console.error("Authentication error detected:", errorMessage);
+      return res.status(401).json({
+        error: "Shopify authentication failed",
+        details: "Your Shopify API access token may be invalid or expired.",
+        suggestion: "Please regenerate your Shopify API access token and update the SHOPIFY_ADMIN_ACCESS_TOKEN environment variable.",
+      });
+    }
+
+    if (isConnectionError) {
+      console.error("Connection error detected:", errorMessage);
+      return res.status(503).json({
+        error: "Unable to validate Shopify connection",
+        details: errorMessage,
+        suggestion: "Please verify your Shopify credentials and network connectivity.",
+      });
+    }
 
     if (isFeaturedImageError) {
       console.error("Featured image error detected:", errorMessage);
@@ -177,6 +236,7 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     res.status(500).json({
       error: "Failed to publish to Shopify",
       details: errorMessage,
+      suggestion: "Please check the server logs for more details and verify your Shopify configuration.",
     });
   }
 };
