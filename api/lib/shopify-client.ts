@@ -423,6 +423,104 @@ export class ShopifyClient {
   }
 
   /**
+   * Fetch products from Shopify with timeout
+   */
+  async getProducts(limit: number = 250): Promise<Array<{ id: string; title: string; handle: string; image?: string }>> {
+    this.validateCredentials();
+
+    const restUrl = `${this.baseUrl}/products.json?limit=${Math.min(limit, 250)}&fields=id,title,handle,image`;
+
+    try {
+      console.log(`Fetching products from Shopify: ${restUrl}`);
+      console.log(`Shop: ${this.shopName}, API Version: ${this.apiVersion}`);
+
+      // Create abort controller for timeout (30 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        const response = await fetch(restUrl, {
+          headers: {
+            "X-Shopify-Access-Token": this.accessToken,
+          },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        // Log response metadata
+        console.log(`Shopify response status: ${response.status} ${response.statusText}`);
+        console.log(`Response headers content-type: ${response.headers.get("content-type")}`);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Shopify API error (${response.status}):`, errorText.substring(0, 500));
+
+          if (response.status === 401) {
+            throw new Error("Shopify authentication failed. Please check your access token.");
+          } else if (response.status === 404) {
+            throw new Error("Shopify store not found. Please verify your shop name.");
+          } else {
+            throw new Error(`Failed to fetch products from Shopify: ${response.status} ${response.statusText}`);
+          }
+        }
+
+        const contentType = response.headers.get("content-type");
+        let data;
+
+        try {
+          if (!contentType?.includes("application/json")) {
+            const errorText = await response.text();
+            console.error("⚠️  Invalid content type. Expected JSON but got:", contentType);
+            console.error("Response body (first 500 chars):", errorText.substring(0, 500));
+
+            // Try to parse as JSON anyway in case content-type header is wrong
+            try {
+              console.log("Attempting to parse response as JSON despite content-type mismatch...");
+              data = JSON.parse(errorText);
+              console.log("✓ Successfully parsed as JSON");
+            } catch {
+              throw new Error(`Invalid response format from Shopify. Expected JSON but got ${contentType}. Body: ${errorText.substring(0, 200)}`);
+            }
+          } else {
+            data = await response.json();
+          }
+        } catch (parseError) {
+          console.error("❌ Failed to parse Shopify response:", parseError);
+          throw new Error(`Failed to parse Shopify response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+        }
+
+        if (!data.products || !Array.isArray(data.products)) {
+          console.warn("No products array in Shopify response");
+          return [];
+        }
+
+        console.log(`Successfully fetched ${data.products.length} products from Shopify`);
+
+        return data.products.map((product) => ({
+          id: product.id,
+          title: product.title,
+          handle: product.handle,
+          image: product.image?.src,
+        }));
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error("Shopify API request timeout - took longer than 30 seconds");
+          throw new Error("Shopify API request timed out. The service may be temporarily unavailable.");
+        }
+
+        throw fetchError;
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error in getProducts:", errorMsg);
+      throw error;
+    }
+  }
+
+  /**
    * Validate Shopify connection
    */
   async validateConnection(): Promise<boolean> {
@@ -430,6 +528,9 @@ export class ShopifyClient {
       this.validateCredentials();
 
       const restUrl = `${this.baseUrl}/shop.json`;
+      console.log(`Validating Shopify connection. URL: ${restUrl}`);
+      console.log(`Shop name: ${this.shopName}`);
+      console.log(`API version: ${this.apiVersion}`);
 
       const response = await fetch(restUrl, {
         headers: {
@@ -437,9 +538,30 @@ export class ShopifyClient {
         },
       });
 
-      return response.ok;
-    } catch {
-      return false;
+      console.log(`Shopify shop.json response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Shopify API error (${response.status}): ${errorText}`);
+
+        if (response.status === 401) {
+          throw new Error("Authentication failed - Invalid or expired access token. Please regenerate your Shopify API access token.");
+        } else if (response.status === 404) {
+          throw new Error("Shop not found - Please check that SHOPIFY_SHOP is correctly formatted (e.g., myshop.myshopify.com).");
+        } else if (response.status >= 400 && response.status < 500) {
+          throw new Error(`Client error: ${response.statusText}. Please verify your Shopify credentials.`);
+        } else {
+          throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      const data = await response.json();
+      console.log(`Successfully connected to Shopify shop: ${data.shop?.name}`);
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Shopify connection validation error:", errorMessage);
+      throw new Error(errorMessage);
     }
   }
 }
