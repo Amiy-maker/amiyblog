@@ -472,8 +472,8 @@ function getBlogStyles(): string {
     .blog-content h2 {
       font-size: 1.8em;
       font-weight: 600;
-      margin-top: 50px;
-      margin-bottom: 25px;
+      margin-top: 55px;
+      margin-bottom: 28px;
       line-height: 1.3;
       color: #1a1a1a;
       border-bottom: 3px solid #e8e8e8;
@@ -483,7 +483,7 @@ function getBlogStyles(): string {
     .blog-content h3 {
       font-size: 1.4em;
       font-weight: 600;
-      margin-top: 35px;
+      margin-top: 40px;
       margin-bottom: 20px;
       line-height: 1.3;
       color: #1a1a1a;
