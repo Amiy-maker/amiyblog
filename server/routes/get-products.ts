@@ -119,3 +119,5 @@ const getProductsHandler: RequestHandler = async (req, res) => {
     });
   }
 };
+
+export const handleGetProducts = asyncHandler(getProductsHandler);
