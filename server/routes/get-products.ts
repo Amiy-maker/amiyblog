@@ -9,7 +9,7 @@ const asyncHandler = (fn: RequestHandler): RequestHandler => (req, res, next) =>
 const getProductsHandler: RequestHandler = async (req, res) => {
   try {
     // Disable caching for this endpoint to ensure fresh products are always returned
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Cache-Control", "no-store, max-age=0, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
 
