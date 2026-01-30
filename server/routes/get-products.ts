@@ -81,11 +81,9 @@ const getProductsHandler: RequestHandler = async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Error fetching products:", errorMessage);
-    console.error("Full error object:", error);
+    console.error("❌ Error fetching products:", errorMessage);
 
-    // Determine error status and provide helpful message
-    let status = 500;
+    // Determine error code and user-facing message
     let code = "PRODUCTS_FETCH_ERROR";
     let userMessage = "Failed to fetch products from Shopify";
 
@@ -95,7 +93,6 @@ const getProductsHandler: RequestHandler = async (req, res) => {
       errorMessage.includes("authentication") ||
       errorMessage.includes("credentials")
     ) {
-      status = 401;
       code = "SHOPIFY_AUTH_ERROR";
       userMessage = "Shopify authentication failed. Invalid or expired access token.";
     } else if (
@@ -103,7 +100,6 @@ const getProductsHandler: RequestHandler = async (req, res) => {
       errorMessage.includes("SHOPIFY_SHOP") ||
       errorMessage.includes("environment variables")
     ) {
-      status = 503;
       code = "SHOPIFY_NOT_CONFIGURED";
       userMessage = "Shopify credentials are not configured.";
     } else if (
@@ -112,21 +108,23 @@ const getProductsHandler: RequestHandler = async (req, res) => {
       errorMessage.includes("ECONNREFUSED") ||
       errorMessage.includes("temporarily unavailable")
     ) {
-      status = 503;
       code = "SHOPIFY_TIMEOUT";
       userMessage = "Shopify server is temporarily unavailable. Please try again later.";
     } else if (
       errorMessage.includes("not found") ||
       errorMessage.includes("404")
     ) {
-      status = 404;
       code = "SHOPIFY_STORE_NOT_FOUND";
       userMessage = "Shopify store could not be found. Check your shop name.";
     }
 
+    // Always return 200 OK with error details in response body for consistency
+    // This prevents browser/proxy errors and ensures the client gets the error message
     res.setHeader("Content-Type", "application/json");
-    res.status(status).json({
+    console.log(`Returning HTTP 200 with error code: ${code}`);
+    res.status(200).json({
       success: false,
+      products: [],
       error: userMessage,
       details: errorMessage,
       code,
