@@ -169,13 +169,15 @@ export function RelatedProductsField({
             clearTimeout(timeoutId);
 
             if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-              lastError = new Error("Request timed out. Shopify may be temporarily unavailable.");
-              console.warn("Products fetch timeout, retrying...");
+              lastError = new Error("Request timed out - Shopify may be temporarily unavailable");
+              console.warn("Products fetch timeout on attempt", attempt, "of", maxRetries);
               if (attempt < maxRetries) {
+                console.log(`Waiting 2 seconds before retry...`);
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 continue;
               }
             } else {
+              // Re-throw non-timeout fetch errors
               throw fetchError;
             }
           }
