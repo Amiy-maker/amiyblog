@@ -690,26 +690,38 @@ Timestamp: ${data.timestamp}
 
     setIsPublishing(true);
     try {
-      console.log("Starting publish process...");
+      console.log("=== Starting Shopify Publish Process ===");
       console.log("Title:", publishData.title);
       console.log("Featured image URL:", featuredImage?.url || "None");
       console.log("Document content length:", documentContent.length);
+      console.log("Related products count:", relatedProducts.length);
+      if (relatedProducts.length > 0) {
+        console.log("Related products details:", relatedProducts.map((p) => ({
+          id: p.id,
+          title: p.title,
+          handle: p.handle,
+        })));
+      }
+
+      const publishPayload = {
+        document: documentContent,
+        title: publishData.title,
+        author: publishData.author || undefined,
+        tags: publishData.tags
+          ? publishData.tags.split(",").map((t) => t.trim())
+          : undefined,
+        publicationDate: publishData.publicationDate,
+        imageUrls: Object.keys(imageUrls).length > 0 ? imageUrls : undefined,
+        featuredImageUrl: featuredImage?.url,
+        relatedProducts: relatedProducts.length > 0 ? relatedProducts : undefined,
+      };
+
+      console.log("Full publish payload:", publishPayload);
 
       const response = await fetch("/api/publish-shopify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          document: documentContent,
-          title: publishData.title,
-          author: publishData.author || undefined,
-          tags: publishData.tags
-            ? publishData.tags.split(",").map((t) => t.trim())
-            : undefined,
-          publicationDate: publishData.publicationDate,
-          imageUrls: Object.keys(imageUrls).length > 0 ? imageUrls : undefined,
-          featuredImageUrl: featuredImage?.url,
-          relatedProducts: relatedProducts.length > 0 ? relatedProducts : undefined,
-        }),
+        body: JSON.stringify(publishPayload),
       });
 
       console.log("Publish response status:", response.status);
@@ -768,9 +780,22 @@ Timestamp: ${data.timestamp}
       }
 
       console.log("Article published successfully. Article ID:", data.articleId);
-      console.log("Related products saved:", data.relatedProductsCount || 0);
+      console.log("Related products count:", data.relatedProductsCount || 0);
+      console.log("Related products metafield success:", data.relatedProductsMetafieldSuccess);
 
-      toast.success("Published to Shopify successfully!");
+      // Show appropriate success message
+      let successMessage = "Published to Shopify successfully!";
+      if (relatedProducts.length > 0) {
+        if (data.relatedProductsMetafieldSuccess) {
+          successMessage += " Related products saved to metafield.";
+          toast.success(successMessage);
+        } else {
+          console.warn("Related products were not saved to metafield. Check server logs for details.");
+          toast.error(`Article published but ${relatedProducts.length} related products metafield update failed. Check console for details.`);
+        }
+      } else {
+        toast.success(successMessage);
+      }
       setShowPublishModal(false);
       setPublishData({
         title: "",
@@ -778,6 +803,7 @@ Timestamp: ${data.timestamp}
         tags: "",
         publicationDate: new Date().toISOString().split("T")[0],
       });
+      setRelatedProducts([]); // Clear selected products after publish
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error("Error publishing:", error);
