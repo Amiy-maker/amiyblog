@@ -634,33 +634,39 @@ export class ShopifyClient {
 
     console.log("GraphQL Variables:", JSON.stringify(variables, null, 2));
 
+    console.log("Sending GraphQL request to Shopify for metafield update...");
     const response = await this.graphql(graphqlQuery, variables);
 
-    console.log("Metafield Response:", JSON.stringify(response, null, 2));
+    console.log("=== Metafield Response ===");
+    console.log(JSON.stringify(response, null, 2));
 
     if (response.errors) {
-      console.error("Update metafield GraphQL error:", response.errors);
-      throw new Error(`Failed to update metafield: ${response.errors.map((e: any) => e.message).join('; ')}`);
+      console.error("❌ Update metafield GraphQL error:", response.errors);
+      const errorDetails = response.errors.map((e: any) => e.message).join('; ');
+      throw new Error(`Failed to update metafield: ${errorDetails}`);
     }
 
     const metafieldData = response.data?.metafieldsSet;
     if (!metafieldData) {
-      console.error("No metafieldsSet data in response:", response.data);
+      console.error("❌ No metafieldsSet data in response:", response.data);
       throw new Error("Metafield update returned no data");
     }
 
-    if (metafieldData?.userErrors?.length > 0) {
-      console.error("Metafield user errors:", metafieldData.userErrors);
-      const errorMessages = metafieldData.userErrors.map((e: any) => `${e.field}: ${e.message}`).join('; ');
+    if (metafieldData?.userErrors && metafieldData.userErrors.length > 0) {
+      console.error("❌ Metafield user errors:", metafieldData.userErrors);
+      const errorMessages = metafieldData.userErrors.map((e: any) => `${e.field || 'unknown'}: ${e.message}`).join('; ');
+      console.error("Full error details:", JSON.stringify(metafieldData.userErrors, null, 2));
       throw new Error(`Metafield validation error: ${errorMessages}`);
     }
 
-    console.log("✓ Metafield updated successfully");
+    console.log("✅ Metafield updated successfully");
     if (metafieldData.metafields && metafieldData.metafields.length > 0) {
       const updatedField = metafieldData.metafields[0];
-      console.log(`  - ID: ${updatedField.id}`);
-      console.log(`  - Type: ${updatedField.type}`);
-      console.log(`  - Value (first 100 chars): ${updatedField.value.substring(0, 100)}`);
+      console.log(`  ✓ ID: ${updatedField.id}`);
+      console.log(`  ✓ Namespace: ${updatedField.namespace}`);
+      console.log(`  ✓ Key: ${updatedField.key}`);
+      console.log(`  ✓ Type: ${updatedField.type}`);
+      console.log(`  ✓ Value (first 200 chars): ${updatedField.value.substring(0, 200)}`);
     }
 
     return true;
