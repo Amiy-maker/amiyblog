@@ -256,6 +256,7 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
       metadata: parsed.metadata,
       featuredImageIncluded: !!featuredImageUrl,
       relatedProductsCount: relatedProducts?.length || 0,
+      relatedProductsMetafieldSuccess: relatedProductsMetafieldSuccess,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
