@@ -507,19 +507,29 @@ export class ShopifyClient {
           throw new Error(`Failed to parse Shopify response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
         }
 
+        // Log full response for debugging
+        console.log("Full Shopify response:", JSON.stringify(data, null, 2).substring(0, 1000));
+
         if (!data.products || !Array.isArray(data.products)) {
-          console.warn("No products array in Shopify response. Data:", JSON.stringify(data).substring(0, 200));
+          console.warn("No products array in Shopify response. Response keys:", Object.keys(data).join(", "));
+          console.warn("Response data:", JSON.stringify(data).substring(0, 500));
           return [];
         }
 
         console.log(`Successfully fetched ${data.products.length} products from Shopify`);
+        if (data.products.length > 0) {
+          console.log("First product raw data:", JSON.stringify(data.products[0]));
+        }
 
-        return data.products.map((product) => ({
+        const mappedProducts = data.products.map((product) => ({
           id: product.id,
           title: product.title,
           handle: product.handle,
           image: product.image?.src,
         }));
+
+        console.log("Mapped products sample:", mappedProducts.slice(0, 2));
+        return mappedProducts;
       } catch (fetchError) {
         clearTimeout(timeoutId);
 
@@ -646,22 +656,17 @@ export class ShopifyClient {
 }
 
 /**
- * Singleton instance
+ * Singleton instance - create fresh on each request in Vercel environment
  */
-let client: ShopifyClient | null = null;
-
 export function getShopifyClient(): ShopifyClient {
-  if (!client) {
-    const shopName = process.env.SHOPIFY_SHOP;
-    const accessToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+  const shopName = process.env.SHOPIFY_SHOP;
+  const accessToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
 
-    if (!shopName || !accessToken) {
-      throw new Error(
-        "Shopify credentials not configured. Please set SHOPIFY_SHOP and SHOPIFY_ADMIN_ACCESS_TOKEN environment variables."
-      );
-    }
-
-    client = new ShopifyClient();
+  if (!shopName || !accessToken) {
+    throw new Error(
+      "Shopify credentials not configured. Please set SHOPIFY_SHOP and SHOPIFY_ADMIN_ACCESS_TOKEN environment variables."
+    );
   }
-  return client;
+
+  return new ShopifyClient();
 }
