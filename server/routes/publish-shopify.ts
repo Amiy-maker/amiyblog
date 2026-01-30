@@ -201,23 +201,25 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
     }
 
     // Save related products to metafield if provided
+    let relatedProductsMetafieldSuccess = false;
     if (relatedProducts && relatedProducts.length > 0) {
       try {
         console.log(`✓ Saving ${relatedProducts.length} related products to metafield (type: list.product_reference)`);
 
-        // For list.product_reference type, we need to pass an array of product GIDs
-        // Shopify product GID format: gid://shopify/Product/{product_id}
-        const productGids = relatedProducts.map((p) => {
+        // For list.product_reference type, Shopify expects an array of product IDs or GIDs
+        // We'll use numeric IDs formatted as a JSON array
+        const productIds = relatedProducts.map((p) => {
           // Extract numeric ID from Shopify ID format (e.g., "123456789" or "gid://shopify/Product/123456789")
           const numericId = String(p.id).includes('/')
             ? String(p.id).split('/').pop()
             : String(p.id);
-          return `gid://shopify/Product/${numericId}`;
+          return numericId;
         });
 
-        const relatedProductsValue = JSON.stringify(productGids);
-        console.log(`Metafield payload: ${productGids.length} product references, ${relatedProductsValue.length} bytes`);
-        console.log("Product GIDs:", productGids.join(", "));
+        // For list.product_reference, Shopify expects the value as a JSON array of product IDs
+        const relatedProductsValue = JSON.stringify(productIds);
+        console.log(`Metafield payload: ${productIds.length} product references, ${relatedProductsValue.length} bytes`);
+        console.log("Product IDs:", productIds.join(", "));
 
         await shopifyClient.updateArticleMetafield(
           blogId,
@@ -227,18 +229,20 @@ export const handlePublishShopify: RequestHandler = async (req, res) => {
           relatedProductsValue,
           "list.product_reference"
         );
+        relatedProductsMetafieldSuccess = true;
         console.log("✓ Related products metafield updated successfully");
         console.log(`  - Namespace: custom`);
         console.log(`  - Key: related_products`);
         console.log(`  - Type: list.product_reference`);
-        console.log(`  - Products: ${productGids.length}`);
+        console.log(`  - Products: ${productIds.length}`);
       } catch (error) {
         const metafieldErrorMsg = error instanceof Error ? error.message : String(error);
         console.error("✗ Error saving related products to metafield:", metafieldErrorMsg);
+        console.error("Full error object:", error);
         console.error("Note: Article is already published. Metafield update is optional.");
         console.error("This error does not affect the article publication.");
         // Don't fail the entire publish if metafield update fails
-        // The article is already published
+        // The article is already published, but log the error for debugging
       }
     } else {
       console.log("No related products provided - skipping metafield update");
