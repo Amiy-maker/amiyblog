@@ -142,28 +142,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Save related products to metafield if provided
     if (relatedProducts && relatedProducts.length > 0) {
       try {
-        console.log(`[${new Date().toISOString()}] Saving ${relatedProducts.length} related products to metafield`);
-        const relatedProductsValue = JSON.stringify(
-          relatedProducts.map((p) => ({
-            id: p.id,
-            title: p.title,
-            handle: p.handle,
-            image: p.image,
-          }))
-        );
+        console.log(`[${new Date().toISOString()}] ✓ Saving ${relatedProducts.length} related products to metafield (type: list.product_reference)`);
+
+        // For list.product_reference type, we need to pass an array of product GIDs
+        // Shopify product GID format: gid://shopify/Product/{product_id}
+        const productGids = relatedProducts.map((p) => {
+          // Extract numeric ID from Shopify ID format
+          const numericId = String(p.id).includes('/')
+            ? String(p.id).split('/').pop()
+            : String(p.id);
+          return `gid://shopify/Product/${numericId}`;
+        });
+
+        const relatedProductsValue = JSON.stringify(productGids);
+        console.log(`[${new Date().toISOString()}] Metafield payload: ${productGids.length} product references, ${relatedProductsValue.length} bytes`);
+        console.log(`[${new Date().toISOString()}] Product GIDs: ${productGids.join(", ")}`);
+
         await shopifyClient.updateArticleMetafield(
           blogId,
           articleId,
           "custom",
           "related_products",
           relatedProductsValue,
-          "json"
+          "list.product_reference"
         );
         console.log(`[${new Date().toISOString()}] ✓ Related products metafield updated successfully`);
+        console.log(`[${new Date().toISOString()}]   - Namespace: custom`);
+        console.log(`[${new Date().toISOString()}]   - Key: related_products`);
+        console.log(`[${new Date().toISOString()}]   - Type: list.product_reference`);
+        console.log(`[${new Date().toISOString()}]   - Products: ${productGids.length}`);
       } catch (error) {
         const metafieldErrorMsg = error instanceof Error ? error.message : String(error);
         console.error(`[${new Date().toISOString()}] ✗ Error saving related products to metafield:`, metafieldErrorMsg);
         console.error(`[${new Date().toISOString()}] Note: Article is already published. Metafield update is optional.`);
+        console.error(`[${new Date().toISOString()}] This error does not affect the article publication.`);
         // Don't fail the entire publish if metafield update fails
       }
     }
