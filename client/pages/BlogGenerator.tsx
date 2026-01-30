@@ -768,9 +768,21 @@ Timestamp: ${data.timestamp}
       }
 
       console.log("Article published successfully. Article ID:", data.articleId);
-      console.log("Related products saved:", data.relatedProductsCount || 0);
+      console.log("Related products count:", data.relatedProductsCount || 0);
+      console.log("Related products metafield success:", data.relatedProductsMetafieldSuccess);
 
-      toast.success("Published to Shopify successfully!");
+      // Show appropriate success message
+      let successMessage = "Published to Shopify successfully!";
+      if (relatedProducts.length > 0) {
+        if (data.relatedProductsMetafieldSuccess) {
+          successMessage += " Related products saved to metafield.";
+        } else {
+          console.warn("Related products were not saved to metafield. Check server logs for details.");
+          toast.warning("Article published but related products metafield update failed. Check console for details.");
+        }
+      }
+
+      toast.success(successMessage);
       setShowPublishModal(false);
       setPublishData({
         title: "",
@@ -778,6 +790,7 @@ Timestamp: ${data.timestamp}
         tags: "",
         publicationDate: new Date().toISOString().split("T")[0],
       });
+      setRelatedProducts([]); // Clear selected products after publish
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error("Error publishing:", error);
