@@ -12,6 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       shopifyClient = getShopifyClient();
     } catch (clientError) {
       console.error("Failed to initialize Shopify client:", clientError instanceof Error ? clientError.message : String(clientError));
+      res.setHeader("Content-Type", "application/json");
       return res.status(503).json({
         success: false,
         error: "Shopify not configured",
@@ -43,6 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const products = await shopifyClient.getProducts(limit);
     console.log(`Successfully fetched ${products.length} products`);
 
+    res.setHeader("Content-Type", "application/json");
     res.json({
       success: true,
       products,
