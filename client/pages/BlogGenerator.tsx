@@ -776,13 +776,14 @@ Timestamp: ${data.timestamp}
       if (relatedProducts.length > 0) {
         if (data.relatedProductsMetafieldSuccess) {
           successMessage += " Related products saved to metafield.";
+          toast.success(successMessage);
         } else {
           console.warn("Related products were not saved to metafield. Check server logs for details.");
-          toast.warning("Article published but related products metafield update failed. Check console for details.");
+          toast.error(`Article published but ${relatedProducts.length} related products metafield update failed. Check console for details.`);
         }
+      } else {
+        toast.success(successMessage);
       }
-
-      toast.success(successMessage);
       setShowPublishModal(false);
       setPublishData({
         title: "",
