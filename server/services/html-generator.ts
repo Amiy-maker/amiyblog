@@ -202,6 +202,10 @@ function generateSectionBody(
   const sectionImages = section.images || [];
   let imageIndex = 0;
 
+  // Calculate optimal spacing for images - spread them evenly through content
+  // This ensures all uploaded images are included in the output
+  const imagePlacementInterval = Math.ceil(paragraphs.length / (sectionImages.length || 1));
+
   const html = paragraphs
     .map((para, idx) => {
       // First line of paragraph might be a subheading
@@ -223,28 +227,53 @@ function generateSectionBody(
         result += `<p style="font-size: 1.05em; line-height: 1.8; margin-bottom: 20px; margin-top: 0; color: #3a3a3a;">${textWithLinksToHTML(bodyText)}</p>`;
       }
 
-      // Add images sequentially as they become available
-      // Insert images after paragraphs in order (not just every other one)
+      // Add images at calculated intervals to spread them throughout content
+      // This ensures all uploaded images are included, not limited to every other paragraph
       if (includeImages && imageIndex < sectionImages.length) {
-        const image = sectionImages[imageIndex];
-        console.log(`Looking for image keyword: "${image.keyword}" in section`);
-        const imageUrl = imageUrls[image.keyword];
+        // Insert image if we've reached the interval position, or if it's the last paragraph
+        const shouldInsertImage = idx % imagePlacementInterval === imagePlacementInterval - 1 || idx === paragraphs.length - 1;
 
-        // Only include image if URL is available (don't use placeholders)
-        if (imageUrl) {
-          console.log(`Resolved image URL for section: ${imageUrl}`);
-          result += `\n<img src="${imageUrl}" alt="${image.keyword}" style="width: 100%; max-width: 850px; height: auto; display: block; margin: 30px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); object-fit: contain; background-color: #f5f5f5;" />`;
-          imageIndex++;
-        } else {
-          console.log(`Image URL not available for keyword: ${image.keyword}. Image will be skipped.`);
-          // Still increment index to try next image on next paragraph
-          imageIndex++;
+        if (shouldInsertImage && imageIndex < sectionImages.length) {
+          const image = sectionImages[imageIndex];
+          console.log(`Looking for image keyword: "${image.keyword}" in section at position ${imageIndex}`);
+          const imageUrl = imageUrls[image.keyword];
+
+          // Only include image if URL is available (don't use placeholders)
+          if (imageUrl) {
+            console.log(`Resolved image URL for section: ${imageUrl}`);
+            result += `\n<img src="${imageUrl}" alt="${image.keyword}" style="width: 100%; max-width: 850px; height: auto; display: block; margin: 30px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); object-fit: contain; background-color: #f5f5f5;" />`;
+            imageIndex++;
+          } else {
+            console.log(`Image URL not available for keyword: ${image.keyword}. Image will be skipped.`);
+            // Still increment to try next image
+            imageIndex++;
+          }
         }
       }
 
       return result;
     })
     .join("\n\n");
+
+  // If there are remaining images that weren't inserted, add them at the end
+  if (includeImages && imageIndex < sectionImages.length) {
+    console.log(`Adding ${sectionImages.length - imageIndex} remaining image(s) at end of section`);
+    const remainingImages = paragraphs.length > 0 ? "\n\n" : "";
+    const additionalImages = sectionImages
+      .slice(imageIndex)
+      .map((image) => {
+        const imageUrl = imageUrls[image.keyword];
+        if (imageUrl) {
+          console.log(`Adding remaining image: ${image.keyword}`);
+          return `<img src="${imageUrl}" alt="${image.keyword}" style="width: 100%; max-width: 850px; height: auto; display: block; margin: 30px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); object-fit: contain; background-color: #f5f5f5;" />`;
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .join("\n\n");
+
+    return html + remainingImages + additionalImages;
+  }
 
   return html;
 }
