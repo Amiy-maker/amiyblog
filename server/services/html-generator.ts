@@ -749,8 +749,52 @@ export function generateStyledHTML(
 
   // Shopify and other platforms strip <style> tags for security
   // All styling uses inline styles on individual elements
-  // Wrapper div includes core typography and layout styles
-  return `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; line-height: 1.7; color: #2c3e50; max-width: 720px; margin: 0 auto; padding: 20px 0;">\n${content}\n</div>`;
+  // Wrapper div includes core typography and layout styles with comprehensive CSS
+  // Note: Since Shopify strips <style> tags, we embed critical styles in the wrapper
+  const wrapperStyle = `
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    line-height: 1.7;
+    color: #2c3e50;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background-color: #ffffff;
+  `;
+
+  // Add a style tag for browsers that support it (as a fallback for platforms that don't strip it)
+  const styleTag = `<style>
+    .blog-content {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      line-height: 1.7;
+      color: #2c3e50;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .blog-content * { margin: 0; padding: 0; box-sizing: border-box; }
+    .blog-content h1 { font-size: 2.5em; font-weight: 700; margin-bottom: 30px; margin-top: 0; line-height: 1.2; color: #424423; letter-spacing: -0.5px; }
+    .blog-content h2 { font-size: 1.8em; font-weight: 600; margin-top: 40px; margin-bottom: 20px; line-height: 1.3; color: #424423; border-bottom: 3px solid #e8e8e8; padding-bottom: 12px; }
+    .blog-content p { font-size: 1.05em; line-height: 1.8; margin-bottom: 20px; color: #3a3a3a; }
+    .blog-content ul, .blog-content ol { margin: 20px 0 20px 35px; line-height: 1.9; }
+    .blog-content li { margin-bottom: 12px; font-size: 1.05em; color: #3a3a3a; }
+    .blog-content blockquote { border-left: 5px solid #d4a574; padding: 25px 30px; margin: 20px 0; background-color: #fef9f5; font-style: italic; font-size: 1.15em; color: #5a5a5a; line-height: 1.8; }
+    .blog-content table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 1em; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-radius: 6px; overflow: hidden; }
+    .blog-content thead { background: linear-gradient(135deg, #f5f5f5 0%, #ebebeb 100%); }
+    .blog-content th { padding: 15px 18px; text-align: left; font-weight: 600; color: #424423; border-bottom: 2px solid #d0d0d0; font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.5px; }
+    .blog-content td { padding: 15px 18px; border-bottom: 1px solid #e8e8e8; color: #3a3a3a; }
+    .blog-content img { max-width: 100%; height: auto; display: block; margin: 40px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+    .blog-content details { margin: 18px 0; padding: 0; border: 1px solid #d0d0d0; border-radius: 6px; cursor: pointer; overflow: hidden; }
+    .blog-content summary { font-weight: 600; font-size: 1.05em; color: #424423; cursor: pointer; outline: none; user-select: none; padding: 20px 22px; background-color: #f9f9f9; display: flex; align-items: center; }
+    .blog-content details > div { padding: 20px 22px; border-top: 1px solid #e0e0e0; background-color: #ffffff; color: #3a3a3a; font-size: 1em; line-height: 1.8; }
+    @media (max-width: 768px) {
+      .blog-content h1 { font-size: 2em; margin-bottom: 24px; }
+      .blog-content h2 { font-size: 1.5em; margin-top: 40px; margin-bottom: 20px; }
+      .blog-content p { font-size: 1em; }
+      .blog-content ul, .blog-content ol { margin-left: 24px; }
+    }
+  </style>`;
+
+  return `${styleTag}<div class="blog-content" style="${wrapperStyle.replace(/\n/g, '')}">\n${content}\n</div>`;
 }
 
 /**
