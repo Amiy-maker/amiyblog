@@ -598,8 +598,16 @@ export class ShopifyClient {
     console.log(`Value (first 200 chars): ${value.substring(0, 200)}`);
 
     const graphqlQuery = `
-      mutation updateMetafield($input: MetafieldsSetInput!) {
-        metafieldsSet(input: $input) {
+      mutation updateMetafield($ownerId: ID!, $namespace: String!, $key: String!, $value: String!, $type: String!) {
+        metafieldsSet(input: {
+          ownerId: $ownerId
+          metafields: [{
+            namespace: $namespace
+            key: $key
+            value: $value
+            type: $type
+          }]
+        }) {
           metafields {
             id
             namespace
@@ -624,17 +632,11 @@ export class ShopifyClient {
     console.log(`Article GID: ${articleGid}`);
 
     const variables = {
-      input: {
-        ownerId: articleGid,
-        metafields: [
-          {
-            namespace,
-            key,
-            value,
-            type: valueType,
-          },
-        ],
-      },
+      ownerId: articleGid,
+      namespace,
+      key,
+      value,
+      type: valueType,
     };
 
     console.log("GraphQL Variables:", JSON.stringify(variables, null, 2));
