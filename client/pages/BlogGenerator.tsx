@@ -790,8 +790,10 @@ Timestamp: ${data.timestamp}
           successMessage += " Related products saved to metafield.";
           toast.success(successMessage);
         } else {
-          console.warn("Related products were not saved to metafield. Check server logs for details.");
-          toast.error(`Article published but ${relatedProducts.length} related products metafield update failed. Check console for details.`);
+          // Article was published, but metafield update failed
+          // Show as info/warning since article itself was published successfully
+          console.warn("Article published, but related products metafield update encountered an issue. Check server logs for details.");
+          toast.info(`Article published successfully. However, related products metafield update had an issue. The article is live but related products may not be saved. Check console for details.`);
         }
       } else {
         toast.success(successMessage);
